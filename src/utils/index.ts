@@ -36,6 +36,6 @@ export function copy(string: string, box?: any){
 	try {
 		clipboardy.writeSync(string);
 		if(box) box.out('✔️ Copied to clipboard');
-	} catch(e) {}
+	} catch(e) { box.out(); }
 	return string;
 }

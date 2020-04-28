@@ -113,7 +113,7 @@ export async function promptApp(configuration: promptApp.Config): Promise<void> 
 
 	// we need a challenge when encryption is enabled
 	if(password && !challenge){
-		console.error('Error: "env.PASSWORD" provided without "env.CHALLENGE"');
+		console.error(`Error: "env.${envKey('PASSWORD')}" provided without "env.${envKey('CHALLENGE')}"`);
 		const {generate} = await prompts({
 			type: 'confirm',
 			name: 'generate',
