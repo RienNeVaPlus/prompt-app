@@ -33,7 +33,9 @@ export function capitalize(string: string){
 }
 
 export function copy(string: string, box?: any){
-	clipboardy.writeSync(string);
-	if(box) box.out('✔️ Copied to clipboard');
+	try {
+		clipboardy.writeSync(string);
+		if(box) box.out('✔️ Copied to clipboard');
+	} catch(e) {}
 	return string;
 }
