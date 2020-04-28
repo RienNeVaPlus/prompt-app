@@ -1,0 +1,35 @@
+{
+  "name": "prompt-app",
+  "version": "0.0.1",
+  "repository": "https://github.com/RienNeVaPlus/prompt-app.git",
+  "author": "RienNeVaPlus <?@rienneva.plus>",
+  "license": "MIT",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "jsnext:main": "src/index.ts",
+  "scripts": {
+    "start": "tsc -w",
+    "build": "tsc",
+    "example": "tsc && node ./dist/example"
+  },
+  "keywords": [
+    "prompts",
+    "app"
+  ],
+  "ntl": {
+    "runner": "yarn"
+  },
+  "dependencies": {
+    "clipboardy": "^2.3.0",
+    "console2": "^2.3.10",
+    "cryptr": "^6.0.2",
+    "prompts": "^2.3.2",
+    "typescript": "^3.8.3"
+  },
+  "devDependencies": {
+    "@types/cryptr": "^4.0.0",
+    "@types/node": "^13.13.2",
+    "@types/prompts": "^2.0.6",
+    "dotenv": "^8.2.0"
+  }
+}
