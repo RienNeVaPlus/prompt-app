@@ -1,11 +1,10 @@
 import {config} from 'dotenv'
-import PromptApp from '../src'
+import App from '../src'
 import * as services from './services'
 
 config({path:'./example/.env'});
 
-PromptApp({
+App({
 	services,
 	env: process.env,
 });
-// app.terminate();

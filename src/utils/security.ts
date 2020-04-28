@@ -6,7 +6,6 @@ const decryptedChallenge = 'prompt-app';
 let cryptr: Cryptr;
 
 export function generateChallenge(password: string){
-	console.log('GENER', password,decryptedChallenge);
 	return new Cryptr(password).encrypt(decryptedChallenge)
 }
 export function encrypt(s: string){ return cryptr.encrypt(s); }
@@ -17,7 +16,6 @@ export function unlock(password: string){
 	cryptr = new Cryptr(password);
 	try {
 		if(cryptr.decrypt($('CHALLENGE')) !== decryptedChallenge) return false;
-		// 'SERVICE',config.services
 		Object.values(config.services)
 			.forEach((s: any) => cronjobs.add(s) && s.onCredentials && s.onCredentials($(s.id, true)));
 		return true;
