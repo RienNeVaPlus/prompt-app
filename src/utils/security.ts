@@ -14,12 +14,15 @@ export function decrypt(s: string){ return cryptr.decrypt(s); }
 export function unlock(password: string){
 	if(!password) return false;
 	cryptr = new Cryptr(password);
-	try {
-		if(cryptr.decrypt($('CHALLENGE')) !== decryptedChallenge) return false;
-		Object.values(config.services)
-			.forEach((s: any) => cronjobs.add(s) && s.onCredentials && s.onCredentials($(s.id, true)));
-		return true;
-	} catch(e){ return false }
+	try { if(cryptr.decrypt($('CHALLENGE')) !== decryptedChallenge) return false; }
+	catch(e){ return false; }
+
+	// initialize services (onCredentials)
+	Object.values(config.services).forEach(
+			(s: any) => cronjobs.add(s) && s.onCredentials && s.onCredentials($(s.id, true))
+	);
+
+	return true;
 }
 
 export function envKey(key: string, isCredential?: boolean){
