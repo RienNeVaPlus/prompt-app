@@ -2,6 +2,6 @@
 
 ```
 npm run example // or
-yarn run example
+yarn example
 ```
 

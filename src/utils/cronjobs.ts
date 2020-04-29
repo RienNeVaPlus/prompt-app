@@ -19,7 +19,7 @@ class Cronjobs {
 				if(res === null) return;
 				if(console.logLevel() > 2) box.out(...(res === true
 					? [console.col('Success', 'green'), time+'ms']
-					: ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
+					: res === undefined ? [] : ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
 				);
 			}
 			catch(e){ box.error(e.stack).out(); }

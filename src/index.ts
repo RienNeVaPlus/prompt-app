@@ -29,7 +29,7 @@ async function main(password?: string): Promise<void> {
 			let title = callturn(service.title);
 			return {
 				title: service.color ? console.col(String(title), service.color) : title,
-				description: service.description,
+				description: callturn(service.description),
 				value: key
 			}
 		})
@@ -104,8 +104,9 @@ async function run(service: any, action: string): Promise<void> {
 		const res = await func({...box, service, prompts} as promptApp.ActionArg);
 		const time = new Date().getTime() - now;
 		if(res === null) return;
+
 		box.out(...(res === true ? [console.col('Success', 'green'), time+'ms']
-			: ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
+			: res === undefined ? [] : ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
 		);
 	}
 	catch(e){ box.error(e.stack).out(); }

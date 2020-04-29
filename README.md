@@ -17,7 +17,7 @@ yarn install prompt-app
 
 ## Structure
 
-See [example](./example) for details and run `yarn run example`.
+See [example](./example) for details and run `yarn example`.
 
 #### index.ts
 
