@@ -1,10 +1,23 @@
 namespace promptApp {
-	export interface Config {
+	export interface Configuration {
 		services: any
+		title?: string
+		exposeMethod?: (name: string, service: any) => boolean
+		mapMethodName?: (name: string, service: any) => string
 		useDefaultServices?: boolean
 		env?: any
 		envPrefix?: string
 		envCredentialsPostfix?: string
+	}
+
+	export interface Config extends Configuration {
+		title: string
+		exposeMethod: (name: string, service: any) => boolean
+		mapMethodName: (name: string, service: any) => string
+		useDefaultServices: boolean
+		env: any
+		envPrefix: string
+		envCredentialsPostfix: string
 	}
 
 	export abstract class Service {
@@ -18,22 +31,34 @@ namespace promptApp {
 		static jobs?: Job[];
 	}
 
-	export interface Job {
-		id: string // optionally auto generated
-		$?: (action: ActionArg) => any // function to run
-		method?: (action: ActionArg) => any // function to run
-		interval?: number // number of seconds between executions
-		name?: string // name to display on logs and tools
-		description?: string // text for tools.jobs
+	export type JobMethod = (action: ActionArg) => any
+	export type JobInterval = number
+	export type JobExecutable = (date: CronjobExecutableArg) => boolean
+	export type JobDescription = string
+
+	export interface JobObject {
+		$: JobMethod // function to run
+		id?: string // optionally auto generated
+		interval?: JobInterval // number of seconds between executions
+		title?: string // title to display on logs and tools
+		description?: JobDescription // text for tools.jobs
 		active?: boolean // whether the job is enabled by default
 		disabled?: boolean // disable selecting the job in tools.jobs
-		executable?: (date: CronjobExecutableArg) => boolean // is run before job execution
+		executable?: JobExecutable // is run before job execution
 	}
 
-	export interface Cronjob extends Job {
+	export type JobArray = [JobMethod, JobInterval?, (JobExecutable | JobDescription)?, JobDescription?]
+
+	export type Job = JobObject | JobArray
+
+	export interface Cronjob extends JobObject {
 		service: any // private
-		name: string // name to display on logs and tools
+		id: string
+		interval: number
+		title: string // name to display on logs and tools
 		executing: boolean // weather the job is running
+		active: boolean
+		disabled: boolean
 	}
 
 	export interface CronjobExecutableArg {

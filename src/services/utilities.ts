@@ -1,5 +1,5 @@
 import prompts from 'prompts'
-import {console, encrypt, decrypt, cronjobs, copy, capitalize} from '../utils'
+import {console, copy, cronjobs, decrypt, encrypt} from '../utils'
 
 function logLevelColor(lvl: number){
 	switch(lvl){
@@ -30,8 +30,8 @@ export class Utilities {
 						value: j.id,
 						selected: j.active === true,
 						disable: j.disabled,
-						title: console.pad(' ', 14, ''+(j.service.title||capitalize(j.service.id))+' ')
-							+ console.pad(' ', 20, j.name || j.id)
+						title: console.pad(' ', 14, j.service.title+' ')
+							+ console.pad(' ', 30, j.title)
 							+ (j.description || '')
 					})
 				),

@@ -1,5 +1,16 @@
 import prompts from 'prompts'
-import {$, callturn, console, copy, cronjobs, envKey, generateChallenge, isCapitalized, unlock, uuid, capitalize} from './utils'
+import {
+	$,
+	callturn,
+	capitalize,
+	console,
+	copy,
+	cronjobs,
+	envKey,
+	generateChallenge,
+	isCapitalized,
+	unlock
+} from './utils'
 import * as defaultServices from './services'
 
 export let config: promptApp.Config;
@@ -9,13 +20,16 @@ async function main(password?: string): Promise<void> {
 	const {services} = config;
 
 	const serviceChoices = Object.keys(services)
-		.filter(key => Object.getOwnPropertyNames(services[key]).find(sKey => isCapitalized(sKey)))
+		.filter(
+			key => Object.getOwnPropertyNames(services[key])
+				.find(sKey => config.exposeMethod(sKey, services[key]))
+		)
 		.map(key => {
 			const service = services[key];
 			let title = callturn(service.title);
 			return {
-				title: service.color ? console.col(String(title || capitalize(service.id)), service.color) : title,
-				description: service.description || '',
+				title: service.color ? console.col(String(title), service.color) : title,
+				description: service.description,
 				value: key
 			}
 		})
@@ -33,20 +47,20 @@ async function main(password?: string): Promise<void> {
 		}, {
 			type: answer.service ? null : 'select',
 			name: 'service',
-			message: 'Menu',
+			message: config.title,
 			choices: serviceChoices,
 			format: v => v === 'quit' ? (cancel = true) && v : v,
 			onState: ({aborted}) => { retry = !aborted; cancel = aborted; }
 		}, {
 			type: () => cancel || answer.action ? null : 'select',
 			name: 'action',
-			message: 'Action',
+			message: 'Method',
 			onState: ({aborted}) => cancel = aborted,
 			choices: ((prev: string) => (Object.getOwnPropertyNames(services[prev])
-					.filter(key => isCapitalized(key))
+					.filter(key => config.exposeMethod(key, services[prev]))
 					.map(key => {
 						const service = services[prev], target = service[key];
-						let title = callturn(target.title) || key.replace(/_/g, ' ');
+						let title = callturn(target.title) || config.mapMethodName(key, service);
 						title = service.color ? console.col(title, service.color) : title;
 						return {
 							value: key,
@@ -79,7 +93,10 @@ async function main(password?: string): Promise<void> {
 }
 
 async function run(service: any, action: string): Promise<void> {
-	const box = console.box(`${console.col(service.title || capitalize(service.id), service.color || 'white')}: ${action.replace(/_/g, ' ')}`);
+	const box = console.box(
+		console.col(service.title, service.color || 'white') +
+		': '+config.mapMethodName(action, service)
+	);
 	try {
 		const now = new Date().getTime();
 		const target = service[action];
@@ -99,15 +116,17 @@ async function quit(): Promise<void> {
 	console.info('Bye');
 }
 
-export async function promptApp(configuration: promptApp.Config): Promise<void> {
-	configuration = {
+export async function promptApp(configuration: promptApp.Configuration): Promise<void> {
+	config = {
+		title: 'Menu',
+		exposeMethod: name => isCapitalized(name) || name.charAt(0) === '$',
+		mapMethodName: name => name.replace(/^\$/,'').split(/(?=[A-Z])/).map(s => capitalize(s)).join(' '),
 		useDefaultServices: true,
 		envPrefix: 'APP_',
 		envCredentialsPostfix: '_CREDENTIALS',
 		...configuration,
 		env: {...process.env, ...(configuration.env||{})}
-	};
-	config = configuration;
+	} as promptApp.Config;
 
 	let password = $('PASSWORD'), challenge = $('CHALLENGE');
 
@@ -130,9 +149,13 @@ export async function promptApp(configuration: promptApp.Config): Promise<void> 
 	}
 
 	// add service id if not provided
-	Object.keys(config.services).forEach(s => {
-		config.services[s].id = config.services[s].id || (config.services[s].title||'')+'_'+uuid()
-	});
+	Object.keys(config.services).forEach(s =>
+		Object.assign(config.services[s], {
+			id: config.services[s].id || s,
+			title: config.services[s].title || capitalize(s),
+			description: config.services[s].description || ''
+		})
+	);
 
 	// auto unlock using key
 	if(password && !unlock(password)) {

@@ -1,22 +1,33 @@
 export class Server {
-	static id = 'server';
 	static description = 'Node.js Web Server';
 
+	/**
+	 * Jobs are executed every job.interval and only if job.executable return true
+	 * Rather than providing them as an object, they can be arrays as well:
+	 * [Server.$flushCache, 30, (...) => ..., 'Description'] is equal to:
+	 */
 	static jobs: promptApp.Job[] = [{
-		method: Server.Flush,
-		id: 'flush',
-		name: 'Flush Caches',
-		description: 'Weekdays from 8 to 22',
-		active: false,
+		$: Server.$flushCache,
 		interval: 30,
-		executable: ({between}) => between(8, 22, true)
+		executable: ({between}) => between(8, 22, true),
+		description: 'Weekdays from 8 to 22'
 	}];
 
+	/**
+	 * Receives the decrypted credentials (.env)
+	 */
 	static onCredentials(_credentials: any){
 		// new Server(credentials);
 	}
 
-	static Flush({debug}: any){
+	/**
+	 * Exposed Method
+	 *
+	 * By default, all methods starting with an upper-case character or with a dollar sign are exposed
+	 * Use config.exposeMethod: (name) => boolean to change this
+	 * The method name is mapped using config.mapMethodName ($flushCache => Flush Cache)
+	 */
+	static $flushCache({debug}: any){
 		debug('Flushing Caches (not rly)...');
 		return true;
 	}

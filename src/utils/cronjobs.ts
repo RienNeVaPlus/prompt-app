@@ -1,5 +1,5 @@
-import {sleep, console, uuid, findDuplicates} from '.'
-import prompts from '../index';
+import {console, findDuplicates, sleep, uuid} from '.'
+import prompts, {config} from '../index';
 
 class Cronjobs {
 	list: promptApp.Cronjob[] = [];
@@ -10,11 +10,11 @@ class Cronjobs {
 			job.executing = true;
 			const box = console.box().line(
 				console.col('[Job]', 'magenta'),
-				console.col(service.title||service.id, service.color || 'white')+':', job.name || job.id
+				console.col(service.title, service.color || 'white')+':', job.title
 			);
 			try {
 				const now = new Date().getTime();
-				const res = await (job.$ || job.method!)({...box, service, prompts} as promptApp.ActionArg);
+				const res = await job.$!({...box, service, prompts} as promptApp.ActionArg);
 				const time = new Date().getTime() - now;
 				if(res === null) return;
 				if(console.logLevel() > 2) box.out(...(res === true
@@ -28,21 +28,31 @@ class Cronjobs {
 	}, 1000);
 
 	add(service: typeof promptApp.Service): promptApp.Cronjob[] {
-		const jobs: promptApp.Job[] = service.jobs||[];
-		const duplicates = findDuplicates(jobs.map(e => e.id));
+		const jobs: promptApp.Job[] = (service.jobs||[]).map(j => Array.isArray(j) ? {
+				$: j[0],
+				interval: j[1],
+				executable: typeof j[2] === 'function' ? j[2] : undefined,
+				description: typeof j.slice(-1)[0] === 'string' ? String(j.slice(-1)[0]) : ''
+			} : j
+		);
+
+		this.list = [...this.list, ...jobs.map((j: any) => ({
+				id: service.id + '.' + (j.$.name||uuid()),
+				title: config.mapMethodName(j.$.name || uuid(), service),
+				interval: 1,
+				active: !j.disabled,
+				disabled: false,
+				...j,
+				service,
+			})
+		)];
+
+		const duplicates = findDuplicates(this.list.map(e => e.id));
 		duplicates.forEach(d => console.log(console.col(
-			'Error in '+service.id+': duplicate job id "'+d+'"', 'red'
+			'Warning: Duplicate job ID "'+d+'"', 'red'
 		)));
 
-		return this.list = [...this.list, ...jobs.map((j: any) => ({
-			id: service.id + '_' + (j.id || j.name || uuid()),
-			name: j.name,
-			interval: 1,
-			active: !j.disabled,
-			disabled: false,
-			...j,
-			service
-		}))];
+		return this.list;
 	}
 
 	get active(): promptApp.Cronjob[] {
