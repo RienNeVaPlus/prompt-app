@@ -14,6 +14,7 @@ import {
 import * as defaultServices from './services'
 
 export let config: promptApp.Config;
+export const Utilities = defaultServices.Utilities;
 
 async function main(password?: string): Promise<void> {
 	let answer: any = {}, retry: boolean, cancel: boolean;
