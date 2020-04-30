@@ -1,13 +1,14 @@
 namespace promptApp {
 	export interface Configuration {
-		services: any
-		title?: string
-		exposeMethod?: (name: string, service: any) => boolean
-		mapMethodName?: (name: string, service: any) => string
-		useDefaultServices?: boolean
-		env?: any
-		envPrefix?: string
-		envCredentialsPostfix?: string
+		services: {[key: string]: typeof Service} // your service classes
+		title?: string // an optional title to your service
+		exposeMethod?: (name: string, service: any) => boolean // which method to expose (default=charAt(0) == Uppercase or $dollar)
+		mapMethodName?: (name: string, service: any) => string // transforms the method name to human readable (default=$myMethod = My Method)
+		useDefaultServices?: boolean // whether to use the built-in "Utilities" service for cronjobs, loglevels etc
+		env?: any // environment variables (this will be merged with process.env and thus is optional)
+		envPrefix?: string	// prefix for app-specific env-vars (default=APP_)
+		envCredentialsPostfix?: string // postfix for credentials (default=_CREDENTIALS)
+		maxPrototypeChainLength?: number // how many levels of parent prototypes are inspected (default=2)
 	}
 
 	export interface Config extends Configuration {
@@ -18,17 +19,19 @@ namespace promptApp {
 		env: any
 		envPrefix: string
 		envCredentialsPostfix: string
+		maxPrototypeChainLength: number
 	}
 
 	export abstract class Service {
 		[key: string]: any
-		static instance: any;
-		static id: string;
+
+		static instance?: any;
+		static id?: string;
 		static title?: (() => string) | string;
-		static description: (() => string) | string;
-		static color: 'cyan' | 'green' | 'yellow' | 'red' | 'magenta' | 'blue' | 'white' | 'grey'
-			| 'black' | 'rainbow' | 'zebra' | 'code';
-		static jobs?: Job[];
+		static description?: (() => string) | string;
+		static color?: 'cyan' | 'green' | 'yellow' | 'red' | 'magenta' | 'blue' | 'white' | 'grey'
+			| 'black' | 'rainbow' | 'zebra' | 'code' | string;
+		static jobs?: Job[]
 	}
 
 	export type JobMethod = (action: ActionArg) => any

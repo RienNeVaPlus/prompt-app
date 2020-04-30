@@ -57,10 +57,10 @@ clipboardy@^2.3.0:
     execa "^1.0.0"
     is-wsl "^2.1.1"
 
-console2@^2.3.10:
-  version "2.3.10"
-  resolved "https://registry.yarnpkg.com/console2/-/console2-2.3.10.tgz#724304c1f245a612553081403aec7914c6c9d4c8"
-  integrity sha512-zn3ssv/VYe8J8j5h6lK/ArYpePsYtCzTxvN1foGHrtIc9PQnYkRwRHql5ITRLhJpbPoDQKFUKpruHGMPspp+qw==
+console2@^2.3.13:
+  version "2.3.13"
+  resolved "https://registry.yarnpkg.com/console2/-/console2-2.3.13.tgz#7833a8404f00bfa6ad140cceb4a05dbd117217ad"
+  integrity sha512-ApYUvznqWTfPuS9p2IrFY3N56f+jKNHJmP/GlJ2gakIVimrtGRfK5qQzQchOXlb2F80cukjTzWxFSga4MeSNcg==
   dependencies:
     async "^1.4.2"
     chalk "^1.1.1"

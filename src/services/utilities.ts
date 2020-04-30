@@ -14,7 +14,7 @@ export class Utilities {
 	static id = 'prompt-app-utilities';
 	static title = 'Utilities';
 	static description = 'Jobs, LogLevel and more';
-	static color = 'white';
+	static color: 'white' = 'white';
 
 	static Jobs = {
 		description: 'Manage Cronjobs',

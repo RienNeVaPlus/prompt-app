@@ -8,6 +8,7 @@ import {
 	cronjobs,
 	envKey,
 	generateChallenge,
+	getAllPropertyNames,
 	isCapitalized,
 	unlock
 } from './utils'
@@ -18,23 +19,7 @@ export const Utilities = defaultServices.Utilities;
 
 async function main(password?: string): Promise<void> {
 	let answer: any = {}, retry: boolean, cancel: boolean;
-	const {services} = config;
-
-	const serviceChoices = Object.keys(services)
-		.filter(
-			key => Object.getOwnPropertyNames(services[key])
-				.find(sKey => config.exposeMethod(sKey, services[key]))
-		)
-		.map(key => {
-			const service = services[key];
-			let title = callturn(service.title);
-			return {
-				title: service.color ? console.col(String(title), service.color) : title,
-				description: callturn(service.description),
-				value: key
-			}
-		})
-		.concat({title: console.col('✖', 'white'), description: 'Quit', value: 'quit'});
+	const {services, title, exposeMethod, mapMethodName, maxPrototypeChainLength} = config;
 
 	do {
 		cancel = retry = false;
@@ -48,8 +33,22 @@ async function main(password?: string): Promise<void> {
 		}, {
 			type: answer.service ? null : 'select',
 			name: 'service',
-			message: config.title,
-			choices: serviceChoices,
+			message: title,
+			choices: Object.keys(services)
+				.filter(
+					key => getAllPropertyNames(services[key], maxPrototypeChainLength)
+						.find(sKey => exposeMethod(sKey, services[key]))
+				)
+				.map(key => {
+					const service = services[key];
+					let title = callturn(service.title);
+					return {
+						title: service.color ? console.col(String(title), service.color) : title,
+						description: callturn(service.description),
+						value: key
+					}
+				})
+				.concat({title: console.col('✖', 'white'), description: 'Quit', value: 'quit'}),
 			format: v => v === 'quit' ? (cancel = true) && v : v,
 			onState: ({aborted}) => { retry = !aborted; cancel = aborted; }
 		}, {
@@ -57,24 +56,26 @@ async function main(password?: string): Promise<void> {
 			name: 'action',
 			message: 'Method',
 			onState: ({aborted}) => cancel = aborted,
-			choices: ((prev: string) => (Object.getOwnPropertyNames(services[prev])
-					.filter(key => config.exposeMethod(key, services[prev]))
-					.map(key => {
-						const service = services[prev], target = service[key];
-						let title = callturn(target.title) || config.mapMethodName(key, service);
-						title = service.color ? console.col(title, service.color) : title;
-						return {
-							value: key,
-							title,
-							description: callturn(target.description)
-						}
-					})
-					.concat({
-						value: 'back',
-						title: console.col('◄', 'white'),
-						description: 'Back'
-					})
-				)
+			choices: ((prev: string) => {
+					return (getAllPropertyNames(services[prev], maxPrototypeChainLength)
+							.filter(key => exposeMethod(key, services[prev]))
+							.map((key:string) => {
+								const service = services[prev], target = (service as any)[key];
+								let title = callturn(target.title) || mapMethodName(key, service);
+								title = service.color ? console.col(title, service.color) : title;
+								return {
+									value: key,
+									title,
+									description: callturn(target.description)
+								}
+							})
+							.concat({
+								value: 'back',
+								title: console.col('◄', 'white'),
+								description: 'Back'
+							})
+					)
+				}
 			) as any
 		}]);
 

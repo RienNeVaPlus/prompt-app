@@ -1,6 +1,6 @@
 {
   "name": "prompt-app",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "repository": "https://github.com/RienNeVaPlus/prompt-app.git",
   "author": "RienNeVaPlus <?@rienneva.plus>",
   "license": "MIT",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "clipboardy": "^2.3.0",
-    "console2": "^2.3.10",
+    "console2": "^2.3.13",
     "cryptr": "^6.0.2",
     "prompts": "^2.3.2",
     "typescript": "^3.8.3"

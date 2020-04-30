@@ -1,4 +1,4 @@
-import clipboardy from 'clipboardy';
+import clipboardy from 'clipboardy'
 
 export * from './console2'
 export * from './cronjobs'
@@ -8,7 +8,7 @@ export function sleep(sec: number = 1) {
 	return new Promise(resolve => setTimeout(resolve, sec * 1000));
 }
 
-export function callturn(funct: Function | string | number, ...args: any[]){
+export function callturn(funct?: Function | string | number, ...args: any[]){
 	return typeof funct === 'function' ? funct(...args) : funct;
 }
 
@@ -38,4 +38,17 @@ export function copy(string: string, box?: any){
 		if(box) box.out('✔️ Copied to clipboard');
 	} catch(e) { box.out(); }
 	return string;
+}
+
+// https://gist.github.com/RienNeVaPlus/fee2ee6b3eadf61b79245896357d7624#file-getallpropertynames-ts
+export function getAllPropertyNames(
+	obj: { new(): any } | any,
+	maxChainLength: number = 2
+): string[] {
+	let set: Set<string> = new Set(), i: number = 0;
+	do { i++;
+		Object.getOwnPropertyNames(obj).forEach(n => set.add(n));
+		obj = Object.getPrototypeOf(obj);
+	} while(obj.constructor !== Object && i < maxChainLength);
+	return [...set];
 }
