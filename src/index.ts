@@ -133,6 +133,12 @@ export async function promptApp(configuration: promptApp.Configuration): Promise
 
 	let password = $('PASSWORD'), challenge = $('CHALLENGE');
 
+	// delete sensitive information - but remember: never provide APP_PASSWORD in production
+	if(password){
+		delete config.env[envKey('PASSWORD')];
+		delete process.env[envKey('PASSWORD')];
+	}
+
 	// we need a challenge when encryption is enabled
 	if(password && !challenge){
 		console.error(`Error: "env.${envKey('PASSWORD')}" provided without "env.${envKey('CHALLENGE')}"`);
@@ -154,7 +160,7 @@ export async function promptApp(configuration: promptApp.Configuration): Promise
 	// add service id if not provided
 	Object.keys(config.services).forEach(s =>
 		Object.assign(config.services[s], {
-			id: config.services[s].id || s,
+			id: config.services[s].id || s.toLowerCase(),
 			title: config.services[s].title || capitalize(s),
 			description: config.services[s].description || ''
 		})

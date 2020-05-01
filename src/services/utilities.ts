@@ -11,10 +11,10 @@ function logLevelColor(lvl: number){
 }
 
 export class Utilities {
-	static id = 'prompt-app-utilities';
-	static title = 'Utilities';
 	static description = 'Jobs, LogLevel and more';
 	static color: 'white' = 'white';
+
+	static jobs: promptApp.Job[] = [];
 
 	static Jobs = {
 		description: 'Manage Cronjobs',
