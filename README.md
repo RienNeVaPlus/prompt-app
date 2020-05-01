@@ -12,7 +12,7 @@ It's basically [prompts](https://github.com/terkelg/prompts) thrown at your serv
 
 ```
 npm install prompt-app // or
-yarn install prompt-app
+yarn add prompt-app
 ```
 
 ## Structure
