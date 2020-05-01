@@ -10,7 +10,7 @@
   "scripts": {
     "start": "tsc -w",
     "build": "tsc",
-    "dist": "yarn version && rm -r ./dist && yarn build",
+    "dist": "yarn version --patch && rm -rf ./dist && yarn build",
     "example": "tsc && node ./dist/example"
   },
   "keywords": [
