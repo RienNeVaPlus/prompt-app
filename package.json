@@ -7,6 +7,7 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "jsnext:main": "src/index.ts",
+  "files": ["dist"],
   "scripts": {
     "start": "tsc -w",
     "build": "rm -rf ./dist && tsc",
