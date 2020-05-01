@@ -35,8 +35,8 @@ export function capitalize(string: string){
 export function copy(string: string, box?: any){
 	try {
 		clipboardy.writeSync(string);
-		if(box) box.out('✔️ Copied to clipboard');
-	} catch(e) { box.out(); }
+		if(box) box.line('✔️ Copied to clipboard');
+	} catch(e) {}
 	return string;
 }
 
@@ -51,4 +51,19 @@ export function getAllPropertyNames(
 		obj = Object.getPrototypeOf(obj);
 	} while(obj.constructor !== Object && i < maxChainLength);
 	return [...set];
+}
+
+export function dateDetails(date: Date = new Date()){
+	const day = date.getDay(), hours = date.getHours(), workday = (day && day < 6) || false;
+	return {
+		date,
+		time: Math.floor(date.getTime() / 1000),
+		workday,
+		weekend: !workday,
+		between: (fromHours: number, toHours: number, onWorkdaysOnly?: boolean) =>
+			hours >= fromHours && hours <= toHours && (!onWorkdaysOnly || workday),
+		day,
+		hours,
+		minute: date.getMinutes()
+	};
 }

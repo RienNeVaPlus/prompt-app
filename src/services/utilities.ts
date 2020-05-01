@@ -1,5 +1,7 @@
 import prompts from 'prompts'
-import {console, copy, cronjobs, decrypt, encrypt} from '../utils'
+import {console, copy, cronjobs, decrypt, encrypt, env, generateChallenge} from '../utils'
+
+const {col} = console;
 
 function logLevelColor(lvl: number){
 	switch(lvl){
@@ -63,34 +65,54 @@ export class Utilities {
 		}
 	};
 
-	static Encrypt = async () => {
-		const text = (await prompts({
-			type: 'text',
-			name: 'encrypt',
-			message: 'Enter text to encrypt'
-		})).encrypt;
+	static Encrypt = {
+		description: '> encrypts a string',
+		$: async ({box}: promptApp.ActionArg) => {
+			const b = box();
+			if(!env('challenge')){
+				await generateChallenge(undefined, b);
+				return null;
+			}
 
-		const encrypted = encrypt(text);
-		const box = console.box('Encrypting "'+text+'"...');
-		box.line(console.col(encrypted, 'rainbow'));
-		copy(encrypted, box);
-		console.spacer();
-		return null;
+			const text = (await prompts({
+				type: 'text',
+				name: 'encrypt',
+				message: 'Enter text to encrypt'
+			})).encrypt;
+
+			const encrypted = encrypt(text);
+			b.line('Input: '+text+'');
+			b.line('Result:');
+			b.line(col(encrypted, 'rainbow'));
+			copy(encrypted, b);
+			b.out();
+			return null;
+		}
 	};
 
-	static Decrypt = async () => {
-		const encrypted = (await prompts({
-			type: 'text',
-			name: 'decrypt',
-			message: 'Enter text to decrypt'
-		})).decrypt;
+	static Decrypt = {
+		description: '< decrypts a string',
+		$: async ({box}: promptApp.ActionArg) => {
+			const b = box();
+			if(!env('challenge')){
+				await generateChallenge(undefined, b);
+				return null;
+			}
 
-		console.log('Decrypting...', 'yellow');
-		try {
+			const encrypted = (await prompts({
+				type: 'text',
+				name: 'decrypt',
+				message: 'Enter text to decrypt'
+			})).decrypt;
+
 			const decrypted = decrypt(encrypted);
-			console.log('Decrypted: '+decrypted);
-			console.spacer();
-		} catch(e){ console.error('Invalid key') }
-		return null;
+			b.line('Input: '+encrypted.substr(0, 40)+'...');
+			b.line(col('Result', 'green')+':');
+			try { b.line(col(decrypted, 'bgGreen')); }
+			catch(e){ b.error('Error: Unable to authenticate data'); }
+			copy(decrypted, b);
+			b.out();
+			return null;
+		}
 	};
 }

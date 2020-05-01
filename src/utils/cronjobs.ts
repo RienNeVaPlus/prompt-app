@@ -1,5 +1,6 @@
-import {console, findDuplicates, sleep, uuid} from '.'
-import prompts, {config} from '../index';
+import {console, dateDetails, findDuplicates, sleep, uuid} from '.'
+import prompts, {config} from '../index'
+const {col} = console;
 
 class Cronjobs {
 	list: promptApp.Cronjob[] = [];
@@ -9,16 +10,16 @@ class Cronjobs {
 			const {service} = job;
 			job.executing = true;
 			const box = console.box().line(
-				console.col('[Job]', 'magenta'),
-				console.col(service.title, service.color || 'white')+':', job.title
+				col('[Job]', 'magenta'),
+				col(service.title, service.color || 'white')+':', job.title
 			);
 			try {
-				const now = new Date().getTime();
-				const res = await job.$!({...box, service, prompts} as promptApp.ActionArg);
-				const time = new Date().getTime() - now;
+				const date = dateDetails();
+				const res = await job.$!({...box, service, prompts, date, origin: 'job'});
+				const time = new Date().getTime() - date.date.getTime();
 				if(res === null) return;
 				if(console.logLevel() > 2) box.out(...(res === true
-					? [console.col('Success', 'green'), time+'ms']
+					? [col('Success', 'green'), time+'ms']
 					: res === undefined ? [] : ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
 				);
 			}
@@ -48,11 +49,25 @@ class Cronjobs {
 		)];
 
 		const duplicates = findDuplicates(this.list.map(e => e.id));
-		duplicates.forEach(d => console.log(console.col(
-			'Warning: Duplicate job ID "'+d+'"', 'red'
-		)));
+		duplicates.forEach(d => console.log(col('Warning: Duplicate job ID "'+d+'"', 'red')));
 
 		return this.list;
+	}
+
+	get date(){
+		const d = new Date();
+		const day = d.getDay(), hours = d.getHours(), workday = (day && day < 6) || false;
+		return {
+			date: d,
+			time: Math.floor(d.getTime() / 1000),
+			workday,
+			weekend: !workday,
+			between: (fromHours: number, toHours: number, onWorkdaysOnly?: boolean) =>
+				hours >= fromHours && hours <= toHours && (!onWorkdaysOnly || workday),
+			day,
+			hours,
+			minute: d.getMinutes()
+		};
 	}
 
 	get active(): promptApp.Cronjob[] {
@@ -60,19 +75,7 @@ class Cronjobs {
 	}
 
 	get ready(): promptApp.Cronjob[] {
-		const d = new Date();
-		const day = d.getDay(), hours = d.getHours(), workday = (day && day < 6) || false;
-		const date = {
-			date: d,
-			time: Math.floor(d.getTime() / 1000),
-			workday,
-			between: (fromHours: number, toHours: number, onWorkdaysOnly?: boolean) =>
-				hours >= fromHours && hours <= toHours && (!onWorkdaysOnly || workday),
-			day,
-			hours,
-			minute: d.getMinutes()
-		};
-
+		const date = this.date;
 		return this.active
 			.filter(job =>
 				job.interval

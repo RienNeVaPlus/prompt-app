@@ -70,7 +70,7 @@ export class Server {
 
 #### .env
 
-A challenge can be created when providing `APP_PASSWORD` without `APP_CHALLENGE`.
+A challenge can be created on first run.
 
 ```ts
 APP_CHALLENGE=4f766d25fd5f7cdf1a8e98bc7907865cf6c76274d8a215549e121c26c48013713ab1102640e11d810a4d87c98b00c8772fc92edc1f0e507ca152834a0e1a01d790af2970c5855fb7c4bca766bfc7e1aad57995ae297bbab072979d073e496998c28e047ea71e6ea843d9
@@ -78,7 +78,7 @@ APP_PASSWORD=secret
 APP_SERVER_CREDENTIALS=a514e5f926c4ddb1a412429f3ebc2adc1627d0db71eeca68df9ea2af6343aab89ec6e77d4c71f05f3b11ba97b50c873f36cd5778601c16d6c64e5b77176ba628095d86cdeec3fc35db91484274a237949c1a4635fd450db386272e1fd0b00940945ec06f6d461cf294bbb15f356e3cffcd152cd21e46f5a2bb4b72a59d6a08fa2f7c652a0d355853deedd2efd564
 ```
 
-Generate service credentials by using the built in "Encrypt"-Tool.
+Manage encrypted service credentials by using the built in "Encrypt"-Tool. Provide the encrypted strings in `APP_SERVICE-NAME_CREDENTIALS` to have them decrypted and handed over to `service.onCredentials(credentials)`.
 
 > Warning: never provide `APP_PASSWORD` in any production environment.
 

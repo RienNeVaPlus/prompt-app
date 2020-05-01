@@ -9,8 +9,7 @@
   "jsnext:main": "src/index.ts",
   "scripts": {
     "start": "tsc -w",
-    "build": "tsc",
-    "dist": "yarn version --patch && rm -rf ./dist && yarn build",
+    "build": "rm -rf ./dist && tsc",
     "example": "tsc && node ./dist/example"
   },
   "keywords": [
@@ -27,13 +26,13 @@
     "clipboardy": "^2.3.0",
     "console2": "^2.3.13",
     "cryptr": "^6.0.2",
-    "prompts": "^2.3.2",
-    "typescript": "^3.8.3"
+    "prompts": "^2.3.2"
   },
   "devDependencies": {
     "@types/cryptr": "^4.0.0",
     "@types/node": "^13.13.2",
     "@types/prompts": "^2.0.6",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "typescript": "^3.8.3"
   }
 }

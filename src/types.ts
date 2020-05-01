@@ -24,6 +24,8 @@ namespace promptApp {
 
 	export abstract class Service {
 		[key: string]: any
+		// https://github.com/microsoft/TypeScript/pull/37797
+		// static [key: string]: any
 
 		static instance?: any;
 		static id?: string;
@@ -34,9 +36,9 @@ namespace promptApp {
 		static jobs?: Job[]
 	}
 
-	export type JobMethod = (action: ActionArg) => any
+	export type JobMethod = (action: ActionArg<'job'>) => any
 	export type JobInterval = number
-	export type JobExecutable = (date: CronjobExecutableArg) => boolean
+	export type JobExecutable = (date: ExecutionDate) => boolean
 	export type JobDescription = string
 
 	export interface JobObject {
@@ -64,23 +66,28 @@ namespace promptApp {
 		disabled: boolean
 	}
 
-	export interface CronjobExecutableArg {
+	export interface ExecutionDate {
 		date: Date
 		between: (hourFrom: number, hourTo: number, onWorkdaysOnly?: boolean) => boolean
 		workday: boolean
+		weekend: boolean
 		time: number
 		day: number
 		hours: number
 		minute: number
 	}
 
-	export interface ActionArg {
+	export interface ActionArg<T = 'job' | 'user'>{
 		service: typeof Service
-		prompts: Function
-		error: Function
-		warn: Function
-		debug: Function
-		info: Function
-		box: Function
+		date: ExecutionDate
+		origin: T
+		prompts: any
+		error: any
+		warn: any
+		debug: any
+		info: any
+		log: any
+		line: any
+		box: any
 	}
 }

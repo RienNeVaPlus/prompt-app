@@ -1,11 +1,11 @@
 import prompts from 'prompts'
 import {
-	$,
 	callturn,
 	capitalize,
 	console,
-	copy,
 	cronjobs,
+	dateDetails,
+	env,
 	envKey,
 	generateChallenge,
 	getAllPropertyNames,
@@ -14,18 +14,29 @@ import {
 } from './utils'
 import * as defaultServices from './services'
 
+const {col} = console;
+
 export let config: promptApp.Config;
 export const Utilities = defaultServices.Utilities;
 
+const methodTypes = ['object', 'function'];
+const exposable = (service: typeof promptApp.Service, prop: string) => {
+	try { return methodTypes.includes(typeof (<any>service)[prop]) && config.exposeMethod(prop, service); } catch(e){ return false }
+};
+
 async function main(password?: string): Promise<void> {
 	let answer: any = {}, retry: boolean, cancel: boolean;
-	const {services, title, exposeMethod, mapMethodName, maxPrototypeChainLength} = config;
+	const {services, title, mapMethodName, maxPrototypeChainLength} = config;
+	const serviceKeys = Object.keys(services)
+		.filter(key => getAllPropertyNames(services[key], maxPrototypeChainLength)
+			.find(prop => exposable(services[key], prop))
+		);
 
 	do {
 		cancel = retry = false;
 
 		const ans = await prompts([{
-			type: password || !$('CHALLENGE') ? null : 'password',
+			type: password || !env('CHALLENGE') ? null : 'password',
 			name: 'secret',
 			message: 'Password',
 			validate: val => (password = unlock(val) && val) && true,
@@ -34,21 +45,17 @@ async function main(password?: string): Promise<void> {
 			type: answer.service ? null : 'select',
 			name: 'service',
 			message: title,
-			choices: Object.keys(services)
-				.filter(
-					key => getAllPropertyNames(services[key], maxPrototypeChainLength)
-						.find(sKey => exposeMethod(sKey, services[key]))
-				)
+			choices: serviceKeys
 				.map(key => {
 					const service = services[key];
 					let title = callturn(service.title);
 					return {
-						title: service.color ? console.col(String(title), service.color) : title,
+						title: service.color ? col(String(title), service.color) : title,
 						description: callturn(service.description),
 						value: key
 					}
 				})
-				.concat({title: console.col('✖', 'white'), description: 'Quit', value: 'quit'}),
+				.concat({title: col('✖', 'white'), description: 'Quit', value: 'quit'}),
 			format: v => v === 'quit' ? (cancel = true) && v : v,
 			onState: ({aborted}) => { retry = !aborted; cancel = aborted; }
 		}, {
@@ -58,11 +65,11 @@ async function main(password?: string): Promise<void> {
 			onState: ({aborted}) => cancel = aborted,
 			choices: ((prev: string) => {
 					return (getAllPropertyNames(services[prev], maxPrototypeChainLength)
-							.filter(key => exposeMethod(key, services[prev]))
+							.filter(prop => exposable(services[prev], prop))
 							.map((key:string) => {
 								const service = services[prev], target = (service as any)[key];
 								let title = callturn(target.title) || mapMethodName(key, service);
-								title = service.color ? console.col(title, service.color) : title;
+								title = service.color ? col(title, service.color) : title;
 								return {
 									value: key,
 									title,
@@ -71,7 +78,7 @@ async function main(password?: string): Promise<void> {
 							})
 							.concat({
 								value: 'back',
-								title: console.col('◄', 'white'),
+								title: col('◄', 'white'),
 								description: 'Back'
 							})
 					)
@@ -96,18 +103,17 @@ async function main(password?: string): Promise<void> {
 
 async function run(service: any, action: string): Promise<void> {
 	const box = console.box(
-		console.col(service.title, service.color || 'white') +
+		col(service.title, service.color || 'white') +
 		': '+config.mapMethodName(action, service)
 	);
 	try {
-		const now = new Date().getTime();
+		const date = dateDetails();
 		const target = service[action];
 		const func = (typeof target === 'function' ? target : target.$ || target.method);
-		const res = await func({...box, service, prompts} as promptApp.ActionArg);
-		const time = new Date().getTime() - now;
+		const res = await func({...box, service, prompts, date, origin: 'user'});
+		const time = new Date().getTime() - date.date.getTime();
 		if(res === null) return;
-
-		box.out(...(res === true ? [console.col('Success', 'green'), time+'ms']
+		box.out(...(res === true ? [col('Success', 'green'), time+'ms']
 			: res === undefined ? [] : ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
 		);
 	}
@@ -119,7 +125,7 @@ async function quit(): Promise<void> {
 	console.info('Bye');
 }
 
-export async function promptApp(configuration: promptApp.Configuration): Promise<void> {
+export async function app(configuration: promptApp.Configuration): Promise<void> {
 	config = {
 		title: 'Menu',
 		exposeMethod: name => isCapitalized(name) || name.charAt(0) === '$',
@@ -127,34 +133,29 @@ export async function promptApp(configuration: promptApp.Configuration): Promise
 		useDefaultServices: true,
 		envPrefix: 'APP_',
 		envCredentialsPostfix: '_CREDENTIALS',
+		maxPrototypeChainLength: 2,
 		...configuration,
 		env: {...process.env, ...(configuration.env||{})}
 	} as promptApp.Config;
 
-	let password = $('PASSWORD'), challenge = $('CHALLENGE');
+	let password = env('password'), challenge = env('challenge');
 
 	// delete sensitive information - but remember: never provide APP_PASSWORD in production
 	if(password){
-		delete config.env[envKey('PASSWORD')];
-		delete process.env[envKey('PASSWORD')];
+		delete config.env[envKey('password')];
+		delete process.env[envKey('password')];
 	}
 
-	// we need a challenge when encryption is enabled
-	if(password && !challenge){
-		console.error(`Error: "env.${envKey('PASSWORD')}" provided without "env.${envKey('CHALLENGE')}"`);
-		const {generate} = await prompts({
-			type: 'confirm',
-			name: 'generate',
-			message: 'Do you want to generate a challenge using the provided password?'
-		});
-		if(generate){
-			challenge = generateChallenge(password);
-			const box = console.box('Generating challenge (use in env.CHALLENGE)...');
-			box.line(console.col(challenge, 'rainbow'));
-			copy(challenge, box);
+	// optionally generate challenge
+	if(!challenge){
+		challenge = await generateChallenge(password);
+		if(challenge)
 			return await quit();
-		}
-		password = '';
+	}
+
+	// add internal services
+	if(config.useDefaultServices){
+		config.services = {...defaultServices, ...config.services};
 	}
 
 	// add service id if not provided
@@ -167,14 +168,9 @@ export async function promptApp(configuration: promptApp.Configuration): Promise
 	);
 
 	// auto unlock using key
-	if(password && !unlock(password)) {
+	if(challenge && password && !unlock(password)) {
 		console.error('Invalid password in env.'+envKey('password'));
 		password = '';
-	}
-
-	// add internal services
-	if(config.useDefaultServices){
-		config.services = {...defaultServices, ...config.services};
 	}
 
 	// security is disabled
@@ -185,6 +181,6 @@ export async function promptApp(configuration: promptApp.Configuration): Promise
 	return main(password);
 }
 
-export default promptApp;
+export default app;
 
 export type Job = promptApp.Job;
