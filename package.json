@@ -1,13 +1,15 @@
 {
   "name": "prompt-app",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "repository": "https://github.com/RienNeVaPlus/prompt-app.git",
   "author": "RienNeVaPlus <?@rienneva.plus>",
   "license": "MIT",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "jsnext:main": "src/index.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "tsc -w",
     "build": "rm -rf ./dist && tsc",
