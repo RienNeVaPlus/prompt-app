@@ -82,6 +82,7 @@ namespace promptApp {
 		date: ExecutionDate
 		origin: T
 		prompts: any
+		spinner: any
 		error: any
 		warn: any
 		debug: any

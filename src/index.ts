@@ -1,4 +1,5 @@
 import prompts from 'prompts'
+import ora from 'ora'
 import {
 	callturn,
 	capitalize,
@@ -110,7 +111,9 @@ async function run(service: any, action: string): Promise<void> {
 		const date = dateDetails();
 		const target = service[action];
 		const func = (typeof target === 'function' ? target : target.$ || target.method);
-		const res = await func({...box, service, prompts, date, origin: 'user'});
+		const spinner = ora({text:'Executing...',spinner:'dots'}).start();
+		const res = await func({...box, service, prompts, date, spinner, origin: 'user'});
+		spinner.stop();
 		const time = new Date().getTime() - date.date.getTime();
 		if(res === null) return;
 		box.out(...(res === true ? [col('Success', 'green'), time+'ms']
