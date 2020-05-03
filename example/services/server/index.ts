@@ -27,7 +27,7 @@ export class Server {
 	 * Use config.exposeMethod: (name) => boolean to change this
 	 * The method name is mapped using config.mapMethodName ($flushCache => Flush Cache)
 	 */
-	static $flushCache({debug}: any){
+	static $flushCache({debug}: promptApp.ActionArg){
 		debug('Flushing Caches (not rly)...');
 		return true;
 	}

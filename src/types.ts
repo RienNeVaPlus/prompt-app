@@ -83,6 +83,7 @@ namespace promptApp {
 		origin: T
 		prompts: any
 		spinner: any
+		console: any
 		error: any
 		warn: any
 		debug: any

@@ -1,4 +1,3 @@
-import prompts from 'prompts'
 import {console, copy, cronjobs, decrypt, encrypt, env, generateChallenge} from '../utils'
 
 const {col} = console;
@@ -20,7 +19,7 @@ export class Utilities {
 
 	static Jobs = {
 		description: 'Manage Cronjobs',
-		$: async () => {
+		$: async ({prompts}: promptApp.ActionArg) => {
 			await prompts([{
 				type: 'autocompleteMultiselect',
 				name: 'cronjobs',
@@ -47,7 +46,7 @@ export class Utilities {
 
 	static LogLevel = {
 		description: () => 'is "'+logLevelColor(console.logLevel()).toLowerCase()+'"',
-		$: async () => {
+		$: async ({prompts}: promptApp.ActionArg) => {
 			const {newLevel} = (await prompts([{
 				type: 'select',
 				name: 'newLevel',
@@ -67,7 +66,7 @@ export class Utilities {
 
 	static Encrypt = {
 		description: '> encrypts a string',
-		$: async ({box}: promptApp.ActionArg) => {
+		$: async ({box, prompts}: promptApp.ActionArg) => {
 			const b = box();
 			if(!env('challenge')){
 				await generateChallenge(undefined, b);
@@ -92,7 +91,7 @@ export class Utilities {
 
 	static Decrypt = {
 		description: '< decrypts a string',
-		$: async ({box}: promptApp.ActionArg) => {
+		$: async ({box, prompts}: promptApp.ActionArg) => {
 			const b = box();
 			if(!env('challenge')){
 				await generateChallenge(undefined, b);

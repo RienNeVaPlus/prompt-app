@@ -96,29 +96,48 @@ async function main(password?: string): Promise<void> {
 		return await quit();
 	}
 
-	if(answer.action !== 'back')
-		await run(services[answer.service], answer.action);
+	if(answer.action !== 'back'){
+		await execute('user', services[answer.service], (<any>services[answer.service])[answer.action], answer.action);
+	}
 
 	return await main(password);
 }
 
-async function run(service: any, action: string): Promise<void> {
-	const box = console.box(
-		col(service.title, service.color || 'white') +
-		': '+config.mapMethodName(action, service)
+export async function execute(origin: 'user' | 'job', service: typeof promptApp.Service, method: any, name?: string){
+	const box = console.box().line(
+		'['+(origin === 'user' ? col('User', 'yellow') : col('Job', 'magenta')) +']'+
+		' ' + col(service.title, service.color || 'white') +
+		': ' + config.mapMethodName(name || method.name, service), 'pre:'
 	);
 	try {
+		const spinner = ora({text:'Executing...', spinner:'dots'});
+
+		if(origin === 'user')
+			spinner.start();
+
+		method = typeof method === 'function' ? method : method.$ || method.method;
+
 		const date = dateDetails();
-		const target = service[action];
-		const func = (typeof target === 'function' ? target : target.$ || target.method);
-		const spinner = ora({text:'Executing...',spinner:'dots'}).start();
-		const res = await func({...box, service, prompts, date, spinner, origin: 'user'});
+		const res = await method({
+			console: box,
+			...box,
+			service,
+			prompts: (
+				questions: prompts.PromptObject | Array<prompts.PromptObject>,
+				options?: prompts.Options) => { spinner.stop(); return prompts(questions, options) },
+			date,
+			spinner,
+			origin
+		});
+		const runtime = new Date().getTime() - date.date.getTime();
 		spinner.stop();
-		const time = new Date().getTime() - date.date.getTime();
+
 		if(res === null) return;
-		box.out(...(res === true ? [col('Success', 'green'), time+'ms']
-			: res === undefined ? [] : ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
+		if(res !== undefined) box.line(
+			...(res === true	? [col('Success', 'green'), runtime+'ms']
+				: ['Result:', res, runtime > 0 ? '('+runtime+'ms)' : ''])
 		);
+		console.opt.console.log(await box.build());
 	}
 	catch(e){ box.error(e.stack).out(); }
 }

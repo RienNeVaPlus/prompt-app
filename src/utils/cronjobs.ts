@@ -1,5 +1,6 @@
-import {console, dateDetails, findDuplicates, sleep, uuid} from '.'
-import prompts, {config} from '../index'
+import {console, findDuplicates, sleep, uuid} from '.'
+import {config, execute} from '../index'
+
 const {col} = console;
 
 class Cronjobs {
@@ -7,23 +8,8 @@ class Cronjobs {
 
 	interval = setInterval(async () => {
 		for(const job of this.ready){
-			const {service} = job;
 			job.executing = true;
-			const box = console.box().line(
-				col('[Job]', 'magenta'),
-				col(service.title, service.color || 'white')+':', job.title
-			);
-			try {
-				const date = dateDetails();
-				const res = await job.$!({...box, service, prompts, date, origin: 'job'});
-				const time = new Date().getTime() - date.date.getTime();
-				if(res === null) return;
-				if(console.logLevel() > 2) box.out(...(res === true
-					? [col('Success', 'green'), time+'ms']
-					: res === undefined ? [] : ['Result:', res, time > 0 ? '('+time+'ms)' : ''])
-				);
-			}
-			catch(e){ box.error(e.stack).out(); }
+			await execute('job', job.service, job.$, job.title);
 			job.executing = false;
 		}
 	}, 1000);
