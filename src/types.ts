@@ -74,7 +74,7 @@ namespace promptApp {
 		time: number
 		day: number
 		hours: number
-		minute: number
+		minutes: number
 	}
 
 	export interface ActionArg<T = 'job' | 'user'>{

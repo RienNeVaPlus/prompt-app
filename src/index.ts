@@ -137,7 +137,8 @@ export async function execute(origin: 'user' | 'job', service: typeof promptApp.
 			...(res === true	? [col('Success', 'green'), runtime+'ms']
 				: ['Result:', res, runtime > 0 ? '('+runtime+'ms)' : ''])
 		);
-		console.opt.console.log(await box.build());
+		//console.opt.console.log(await box.build());
+		box.out();
 	}
 	catch(e){ box.error(e.stack).out(); }
 }

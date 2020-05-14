@@ -52,7 +52,7 @@ class Cronjobs {
 				hours >= fromHours && hours <= toHours && (!onWorkdaysOnly || workday),
 			day,
 			hours,
-			minute: d.getMinutes()
+			minutes: d.getMinutes()
 		};
 	}
 
