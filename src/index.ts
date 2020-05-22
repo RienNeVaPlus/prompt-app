@@ -6,6 +6,8 @@ import {
 	console,
 	cronjobs,
 	dateDetails,
+	decrypt,
+	encrypt,
 	env,
 	envKey,
 	generateChallenge,
@@ -19,6 +21,10 @@ const {col} = console;
 
 export let config: promptApp.Config;
 export const Utilities = defaultServices.Utilities;
+
+export {
+	encrypt, decrypt
+}
 
 const methodTypes = ['object', 'function'];
 const exposable = (service: typeof promptApp.Service, prop: string) => {
