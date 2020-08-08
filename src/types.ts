@@ -6,6 +6,7 @@ namespace promptApp {
 		mapMethodName?: (name: string, service: any) => string // transforms the method name to human readable (default=$myMethod = My Method)
 		useDefaultServices?: boolean // whether to use the built-in "Utilities" service for cronjobs, loglevels etc
 		env?: any // environment variables (this will be merged with process.env and thus is optional)
+		disableActiveJobs?: boolean // to disable jobs in development mode
 		envPrefix?: string	// prefix for app-specific env-vars (default=APP_)
 		envCredentialsPostfix?: string // postfix for credentials (default=_CREDENTIALS)
 		maxPrototypeChainLength?: number // how many levels of parent prototypes are inspected (default=2)

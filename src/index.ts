@@ -163,6 +163,7 @@ export async function app(configuration: promptApp.Configuration): Promise<void>
 		envPrefix: 'APP_',
 		envCredentialsPostfix: '_CREDENTIALS',
 		maxPrototypeChainLength: 2,
+		disableActiveJobs: false,
 		...configuration,
 		env: {...process.env, ...(configuration.env||{})}
 	} as promptApp.Config;

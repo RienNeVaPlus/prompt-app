@@ -27,9 +27,9 @@ class Cronjobs {
 				id: service.id + '.' + (j.$.name||uuid()),
 				title: config.mapMethodName(j.$.name || uuid(), service),
 				interval: 1,
-				active: !j.disabled,
 				disabled: false,
 				...j,
+				active: config.disableActiveJobs ? false : !j.disabled,
 				service,
 			})
 		)];
