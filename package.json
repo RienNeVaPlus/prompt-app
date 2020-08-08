@@ -1,6 +1,6 @@
 {
   "name": "prompt-app",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "repository": "https://github.com/RienNeVaPlus/prompt-app.git",
   "author": "RienNeVaPlus <?@rienneva.plus>",
   "license": "MIT",
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "start": "tsc -w",
-    "prepublishOnly": "rm -rf /dist && tsc",
+    "build": "rm -rf /dist && tsc",
     "example": "tsc && node ./dist/example"
   },
   "keywords": [
