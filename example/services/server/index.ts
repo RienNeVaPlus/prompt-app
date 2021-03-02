@@ -1,5 +1,5 @@
 export class Server {
-	static description = 'Node.js Web Server';
+	static description = 'Node.js Web Server'
 
 	/**
 	 * Jobs are executed every job.interval and only if job.executable return true
@@ -11,13 +11,13 @@ export class Server {
 		interval: 30,
 		executable: ({between}) => between(8, 22, true),
 		description: 'Weekdays from 8 to 22'
-	}];
+	}]
 
 	/**
 	 * Receives the decrypted credentials (.env)
 	 */
 	static onCredentials(_credentials: any){
-		// new Server(credentials);
+		// new Server(credentials)
 	}
 
 	/**
@@ -28,7 +28,7 @@ export class Server {
 	 * The method name is mapped using config.mapMethodName ($flushCache => Flush Cache)
 	 */
 	static $flushCache({debug}: promptApp.ActionArg){
-		debug('Flushing Caches (not rly)...');
-		return true;
+		debug('Flushing Caches (not rly)...')
+		return true
 	}
 }

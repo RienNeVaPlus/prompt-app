@@ -26,36 +26,36 @@ export {
 	encrypt, decrypt
 }
 
-const methodTypes = ['object', 'function'];
+const methodTypes = ['object', 'function']
 const exposable = (service: typeof promptApp.Service, prop: string) => {
-	try { return methodTypes.includes(typeof (<any>service)[prop]) && config.exposeMethod(prop, service); } catch(e){ return false }
-};
+	try { return methodTypes.includes(typeof (<any>service)[prop]) && config.exposeMethod(prop, service) } catch(e){ return false }
+}
 
 async function main(password?: string): Promise<void> {
-	let answer: any = {}, retry: boolean, cancel: boolean;
-	const {services, title, mapMethodName, maxPrototypeChainLength} = config;
+	let answer: any = {}, retry: boolean, cancel: boolean
+	const {services, title, mapMethodName, maxPrototypeChainLength} = config
 	const serviceKeys = Object.keys(services)
 		.filter(key => getAllPropertyNames(services[key], maxPrototypeChainLength)
 			.find(prop => exposable(services[key], prop))
-		);
+		)
 
 	do {
-		cancel = retry = false;
+		cancel = retry = false
 
 		const ans = await prompts([{
 			type: password || !env('CHALLENGE') ? null : 'password',
 			name: 'secret',
 			message: 'Password',
 			validate: val => (password = unlock(val) && val) && true,
-			onState: ({aborted}) => { cancel = aborted; }
+			onState: ({aborted}) => { cancel = aborted }
 		}, {
 			type: answer.service ? null : 'select',
 			name: 'service',
 			message: title,
 			choices: serviceKeys
 				.map(key => {
-					const service = services[key];
-					let title = callturn(service.title);
+					const service = services[key]
+					let title = callturn(service.title)
 					return {
 						title: service.color ? col(String(title), service.color) : title,
 						description: callturn(service.description),
@@ -64,7 +64,7 @@ async function main(password?: string): Promise<void> {
 				})
 				.concat({title: col('✖', 'white'), description: 'Quit', value: 'quit'}),
 			format: v => v === 'quit' ? (cancel = true) && v : v,
-			onState: ({aborted}) => { retry = !aborted; cancel = aborted; }
+			onState: ({aborted}) => { retry = !aborted; cancel = aborted }
 		}, {
 			type: () => cancel || answer.action ? null : 'select',
 			name: 'action',
@@ -74,9 +74,9 @@ async function main(password?: string): Promise<void> {
 					return (getAllPropertyNames(services[prev], maxPrototypeChainLength)
 							.filter(prop => exposable(services[prev], prop))
 							.map((key:string) => {
-								const service = services[prev], target = (service as any)[key];
-								let title = callturn(target.title) || mapMethodName(key, service);
-								title = service.color ? col(title, service.color) : title;
+								const service = services[prev], target = (service as any)[key]
+								let title = callturn(target.title) || mapMethodName(key, service)
+								title = service.color ? col(title, service.color) : title
 								return {
 									value: key,
 									title,
@@ -91,22 +91,22 @@ async function main(password?: string): Promise<void> {
 					)
 				}
 			) as any
-		}]);
+		}])
 
-		answer = Object.assign(answer, ans);
-		if(cancel) retry = false;
-	} while(retry);
+		answer = Object.assign(answer, ans)
+		if(cancel) retry = false
+	} while(retry)
 
 	if(cancel){
-		if(answer.service && answer.service !== 'quit') return main(password);
-		return await quit();
+		if(answer.service && answer.service !== 'quit') return main(password)
+		return await quit()
 	}
 
 	if(answer.action !== 'back'){
-		await execute('user', services[answer.service], (<any>services[answer.service])[answer.action], answer.action);
+		await execute('user', services[answer.service], (<any>services[answer.service])[answer.action], answer.action)
 	}
 
-	return await main(password);
+	return await main(password)
 }
 
 export async function execute(origin: 'user' | 'job', service: typeof promptApp.Service, method: any, name?: string){
@@ -114,16 +114,16 @@ export async function execute(origin: 'user' | 'job', service: typeof promptApp.
 		'['+(origin === 'user' ? col('User', 'yellow') : col('Job', 'magenta')) +']'+
 		' ' + col(service.title, service.color || 'white') +
 		': ' + config.mapMethodName(name || method.name, service), 'pre:'
-	);
+	)
 	try {
-		const spinner = ora({text:'Executing...', spinner:'dots'});
+		const spinner = ora({text:'Executing...', spinner:'dots'})
 
 		if(origin === 'user')
-			spinner.start();
+			spinner.start()
 
-		method = typeof method === 'function' ? method : method.$ || method.method;
+		method = typeof method === 'function' ? method : method.$ || method.method
 
-		const date = dateDetails();
+		const date = dateDetails()
 		const res = await method({
 			console: box,
 			...box,
@@ -134,24 +134,24 @@ export async function execute(origin: 'user' | 'job', service: typeof promptApp.
 			date,
 			spinner,
 			origin
-		});
-		const runtime = new Date().getTime() - date.date.getTime();
-		spinner.stop();
+		})
+		const runtime = new Date().getTime() - date.date.getTime()
+		spinner.stop()
 
-		if(res === null) return;
+		if(res === null) return
 		if(res !== undefined) box.line(
 			...(res === true	? [col('Success', 'green'), runtime+'ms']
 				: ['Result:', res, runtime > 0 ? '('+runtime+'ms)' : ''])
-		);
+		)
 		//console.opt.console.log(await box.build());
-		box.out();
+		box.out()
 	}
-	catch(e){ box.error(e.stack).out(); }
+	catch(e){ box.error(e.stack).out() }
 }
 
 async function quit(): Promise<void> {
-	await cronjobs.terminate();
-	console.info('Bye');
+	await cronjobs.terminate()
+	console.info('Bye')
 }
 
 export async function app(configuration: promptApp.Configuration): Promise<void> {
@@ -166,26 +166,26 @@ export async function app(configuration: promptApp.Configuration): Promise<void>
 		disableActiveJobs: false,
 		...configuration,
 		env: {...process.env, ...(configuration.env||{})}
-	} as promptApp.Config;
+	} as promptApp.Config
 
-	let password = env('password'), challenge = env('challenge');
+	let password = env('password'), challenge = env('challenge')
 
 	// delete sensitive information - but remember: never provide APP_PASSWORD in production
 	if(password){
-		delete config.env[envKey('password')];
-		delete process.env[envKey('password')];
+		delete config.env[envKey('password')]
+		delete process.env[envKey('password')]
 	}
 
 	// optionally generate challenge
 	if(!challenge){
-		challenge = await generateChallenge(password);
+		challenge = await generateChallenge(password)
 		if(challenge)
-			return await quit();
+			return await quit()
 	}
 
 	// add internal services
 	if(config.useDefaultServices){
-		config.services = {...defaultServices, ...config.services};
+		config.services = {...defaultServices, ...config.services}
 	}
 
 	// add service id if not provided
@@ -195,22 +195,22 @@ export async function app(configuration: promptApp.Configuration): Promise<void>
 			title: config.services[s].title || capitalize(s),
 			description: config.services[s].description || ''
 		})
-	);
+	)
 
 	// auto unlock using key
 	if(challenge && password && !unlock(password)) {
-		console.error('Invalid password in env.'+envKey('password'));
-		password = '';
+		console.error('Invalid password in env.'+envKey('password'))
+		password = ''
 	}
 
 	// security is disabled
 	if(!challenge){
-		Object.keys(config.services).forEach(s => cronjobs.add(config.services[s]));
+		Object.keys(config.services).forEach(s => cronjobs.add(config.services[s]))
 	}
 
-	return main(password);
+	return main(password)
 }
 
-export default app;
+export default app
 
-export type Job = promptApp.Job;
+export type Job = promptApp.Job

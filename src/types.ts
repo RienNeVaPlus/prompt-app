@@ -28,12 +28,12 @@ namespace promptApp {
 		// https://github.com/microsoft/TypeScript/pull/37797
 		// static [key: string]: any
 
-		static instance?: any;
-		static id?: string;
-		static title?: (() => string) | string;
-		static description?: (() => string) | string;
+		static instance?: any
+		static id?: string
+		static title?: (() => string) | string
+		static description?: (() => string) | string
 		static color?: 'cyan' | 'green' | 'yellow' | 'red' | 'magenta' | 'blue' | 'white' | 'grey'
-			| 'black' | 'rainbow' | 'zebra' | 'code' | string;
+			| 'black' | 'rainbow' | 'zebra' | 'code' | string
 		static jobs?: Job[]
 	}
 

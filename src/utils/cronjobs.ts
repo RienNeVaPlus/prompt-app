@@ -1,18 +1,18 @@
 import {console, findDuplicates, sleep, uuid} from '.'
 import {config, execute} from '../index'
 
-const {col} = console;
+const {col} = console
 
 class Cronjobs {
-	list: promptApp.Cronjob[] = [];
+	list: promptApp.Cronjob[] = []
 
 	interval = setInterval(async () => {
 		for(const job of this.ready){
-			job.executing = true;
-			await execute('job', job.service, job.$, job.title);
-			job.executing = false;
+			job.executing = true
+			await execute('job', job.service, job.$, job.title)
+			job.executing = false
 		}
-	}, 1000);
+	}, 1000)
 
 	add(service: typeof promptApp.Service): promptApp.Cronjob[] {
 		const jobs: promptApp.Job[] = (service.jobs||[]).map(j => Array.isArray(j) ? {
@@ -21,7 +21,7 @@ class Cronjobs {
 				executable: typeof j[2] === 'function' ? j[2] : undefined,
 				description: typeof j.slice(-1)[0] === 'string' ? String(j.slice(-1)[0]) : ''
 			} : j
-		);
+		)
 
 		this.list = [...this.list, ...jobs.map((j: any) => ({
 				id: service.id + '.' + (j.$.name||uuid()),
@@ -32,17 +32,17 @@ class Cronjobs {
 				active: config.disableActiveJobs ? false : !j.disabled,
 				service,
 			})
-		)];
+		)]
 
-		const duplicates = findDuplicates(this.list.map(e => e.id));
-		duplicates.forEach(d => console.log(col('Warning: Duplicate job ID "'+d+'"', 'red')));
+		const duplicates = findDuplicates(this.list.map(e => e.id))
+		duplicates.forEach(d => console.log(col('Warning: Duplicate job ID "'+d+'"', 'red')))
 
-		return this.list;
+		return this.list
 	}
 
 	get date(){
-		const d = new Date();
-		const day = d.getDay(), hours = d.getHours(), workday = (day && day < 6) || false;
+		const d = new Date()
+		const day = d.getDay(), hours = d.getHours(), workday = (day && day < 6) || false
 		return {
 			date: d,
 			time: Math.floor(d.getTime() / 1000),
@@ -53,43 +53,44 @@ class Cronjobs {
 			day,
 			hours,
 			minutes: d.getMinutes()
-		};
+		}
 	}
 
 	get active(): promptApp.Cronjob[] {
-		return this.list.filter(job => job.active);
+		return this.list.filter(job => job.active)
 	}
 
 	get ready(): promptApp.Cronjob[] {
-		const date = this.date;
+		const date = this.date
 		return this.active
 			.filter(job =>
 				job.interval
+        && !job.executing
 				&& !(date.time % job.interval)
 				&& (typeof job.executable !== 'function' || job.executable(date))
 			)
 	}
 
 	get executing(): promptApp.Cronjob[] {
-		return this.list.filter(job => job.executing);
+		return this.list.filter(job => job.executing)
 	}
 
 	async terminate(): Promise<void> {
-		clearInterval(this.interval);
+		clearInterval(this.interval)
 
-		const executing = this.executing;
+		const executing = this.executing
 		if(executing.length){
-			console.debug(`Waiting for ${executing.length} job/s to complete`);
-			await sleep(5);
-			await this.terminate();
-			return;
+			console.debug(`Waiting for ${executing.length} job${executing.length === 1 ? '' : 's'} to complete`)
+			await sleep(5)
+			await this.terminate()
+			return
 		}
 
-		const active = this.active;
-		if(!active.length) return;
+		const active = this.active
+		if(!active.length) return
 
-		console.warn(`Terminated ${active.length} job/s`);
+		console.warn(`Terminated ${active.length} job/s`)
 	}
 }
 
-export const cronjobs = new Cronjobs();
+export const cronjobs = new Cronjobs()
