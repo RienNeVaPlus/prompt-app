@@ -1,4 +1,6 @@
 import console2 from 'console2'
+import {promises as fs} from 'fs'
+import {config} from '../index'
 
 /**
  * PromptApp uses a very old library called console2 which should be replaced completely.
@@ -22,12 +24,26 @@ function extendBox(box: any){
 }
 
 export let logLevel: LogLevel = LogLevel.Debug
-const console: any = console2({disableWelcome:true,override:true}) // isWorker
+const console: any = console2({disableWelcome:true, override:true}) // isWorker
 
 // set log level
 console.logLevel = (set?: keyof typeof LogLevel) => {
 	if(set) logLevel = LogLevel[set]
 	return logLevel
+}
+
+const {stdout} = (process as any)
+
+stdout._orig_write = process.stdout.write
+stdout.write = (data: any) => {
+  const n = new Date
+  if(config.writeLogs){
+    fs.appendFile(
+      `${config.writeLogs}/${n.toISOString().split('T')[0]}.log`,
+      console.strip(data.toString())
+    )
+  }
+  stdout._orig_write(data)
 }
 
 // implement logLevel

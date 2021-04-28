@@ -5,6 +5,7 @@ namespace promptApp {
 		exposeMethod?: (name: string, service: any) => boolean // which method to expose (default=charAt(0) == Uppercase or $dollar)
 		mapMethodName?: (name: string, service: any) => string // transforms the method name to human readable (default=$myMethod = My Method)
 		useDefaultServices?: boolean // whether to use the built-in "Utilities" service for cronjobs, loglevels etc
+    writeLogs: string | boolean // true (=__dirname) or path to logs
 		env?: any // environment variables (this will be merged with process.env and thus is optional)
 		disableActiveJobs?: boolean // to disable jobs in development mode
 		envPrefix?: string	// prefix for app-specific env-vars (default=APP_)
@@ -17,6 +18,7 @@ namespace promptApp {
 		exposeMethod: (name: string, service: any) => boolean
 		mapMethodName: (name: string, service: any) => string
 		useDefaultServices: boolean
+    writeLogs: string
 		env: any
 		envPrefix: string
 		envCredentialsPostfix: string
