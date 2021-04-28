@@ -19,7 +19,7 @@ import * as defaultServices from './services'
 
 const {col} = console;
 
-export let config: promptApp.Config = {
+export const config: promptApp.Config = {
   title: 'Menu',
   exposeMethod: name => isCapitalized(name) || name.charAt(0) === '$',
   mapMethodName: name => name.replace(/^\$/,'').split(/(?=[A-Z])/)
@@ -177,12 +177,16 @@ async function quit(): Promise<void> {
 }
 
 export async function app(configuration: promptApp.Configuration): Promise<void> {
-	config = {
-	  ...config,
-		...configuration,
+  Object.assign(config, configuration, {
     writeLogs: configuration.writeLogs === true ? __dirname : configuration.writeLogs,
-		env: {...process.env, ...(configuration.env||{})}
-	} as promptApp.Config
+    env: {...process.env, ...(configuration.env||{})}
+  })
+	// config = {
+	//   ...config,
+	// 	...configuration,
+  //   writeLogs: configuration.writeLogs === true ? __dirname : configuration.writeLogs,
+	// 	env: {...process.env, ...(configuration.env||{})}
+	// } as promptApp.Config
 
   let password = env('password'), challenge = env('challenge')
 
