@@ -18,7 +18,7 @@ namespace promptApp {
 		exposeMethod: (name: string, service: any) => boolean
 		mapMethodName: (name: string, service: any) => string
 		useDefaultServices: boolean
-    writeLogs: string
+    writeLogs: string | false
 		env: any
 		envPrefix: string
 		envCredentialsPostfix: string

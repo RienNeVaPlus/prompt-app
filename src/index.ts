@@ -19,7 +19,22 @@ import * as defaultServices from './services'
 
 const {col} = console;
 
-export let config: promptApp.Config;
+export let config: promptApp.Config = {
+  title: 'Menu',
+  exposeMethod: name => isCapitalized(name) || name.charAt(0) === '$',
+  mapMethodName: name => name.replace(/^\$/,'').split(/(?=[A-Z])/)
+    .map(s => capitalize(s))
+    .join(' '),
+  useDefaultServices: true,
+  envPrefix: 'APP_',
+  envCredentialsPostfix: '_CREDENTIALS',
+  maxPrototypeChainLength: 2,
+  disableActiveJobs: false,
+  env: {...process.env},
+  writeLogs: false,
+  services: {}
+};
+
 export const Utilities = defaultServices.Utilities;
 
 export {
@@ -110,9 +125,9 @@ async function main(password?: string): Promise<void> {
 }
 
 export async function execute(origin: 'user' | 'job', service: typeof promptApp.Service, method: any, name?: string){
-	const box = console.box().line(
-		'['+(origin === 'user' ? col('User', 'yellow') : col('Job', 'magenta')) +']'+
-		' ' + col(service.title, service.color || 'white') +
+  const box = console.box().line(
+		'['+(origin === 'user' ? col('User', 'yellow') : col(capitalize(origin), 'magenta')) +']'+
+		' ' + col(service.title || service.name, service.color || 'white') +
 		': ' + config.mapMethodName(name || method.name, service), 'pre:'
 	)
 	try {
@@ -124,6 +139,13 @@ export async function execute(origin: 'user' | 'job', service: typeof promptApp.
 		method = typeof method === 'function' ? method : method.$ || method.method
 
 		const date = dateDetails()
+    // const res = await method(arg({
+    //   box,
+    //   service,
+    //   date,
+    //   spinner,
+    //   origin
+    // }))
 		const res = await method({
 			console: box,
 			...box,
@@ -156,21 +178,15 @@ async function quit(): Promise<void> {
 
 export async function app(configuration: promptApp.Configuration): Promise<void> {
 	config = {
-		title: 'Menu',
-		exposeMethod: name => isCapitalized(name) || name.charAt(0) === '$',
-		mapMethodName: name => name.replace(/^\$/,'').split(/(?=[A-Z])/).map(s => capitalize(s)).join(' '),
-		useDefaultServices: true,
-		envPrefix: 'APP_',
-		envCredentialsPostfix: '_CREDENTIALS',
-		maxPrototypeChainLength: 2,
-		disableActiveJobs: false,
+	  ...config,
 		...configuration,
+    writeLogs: configuration.writeLogs === true ? __dirname : configuration.writeLogs,
 		env: {...process.env, ...(configuration.env||{})}
 	} as promptApp.Config
 
-	let password = env('password'), challenge = env('challenge')
+  let password = env('password'), challenge = env('challenge')
 
-	// delete sensitive information - but remember: never provide APP_PASSWORD in production
+	// delete sensitive information - remember: never provide APP_PASSWORD in production
 	if(password){
 		delete config.env[envKey('password')]
 		delete process.env[envKey('password')]
