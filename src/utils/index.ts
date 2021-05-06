@@ -40,6 +40,17 @@ export function copy(string: string, box?: any){
 	return string
 }
 
+export function isClass(cls: any){
+  if(typeof(cls) === 'function' && cls.prototype) {
+    try {
+      cls.arguments && cls.caller
+    } catch(e) {
+      return true
+    }
+  }
+  return false
+}
+
 // https://gist.github.com/RienNeVaPlus/fee2ee6b3eadf61b79245896357d7624#file-getallpropertynames-ts
 export function getAllPropertyNames(
 	obj: { new(): any } | any,

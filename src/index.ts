@@ -1,19 +1,19 @@
 import prompts from 'prompts'
 import ora from 'ora'
 import {
-	callturn,
-	capitalize,
-	console,
-	cronjobs,
-	dateDetails,
-	decrypt,
-	encrypt,
-	env,
-	envKey,
-	generateChallenge,
-	getAllPropertyNames,
-	isCapitalized,
-	unlock
+  callturn,
+  capitalize,
+  console,
+  cronjobs,
+  dateDetails,
+  decrypt,
+  encrypt,
+  env,
+  envKey,
+  generateChallenge,
+  getAllPropertyNames,
+  isCapitalized, isClass,
+  unlock
 } from './utils'
 import * as defaultServices from './services'
 
@@ -46,70 +46,76 @@ const exposable = (service: typeof promptApp.Service, prop: string) => {
 	try { return methodTypes.includes(typeof (<any>service)[prop]) && config.exposeMethod(prop, service) } catch(e){ return false }
 }
 
-async function main(password?: string): Promise<void> {
-	let answer: any = {}, retry: boolean, cancel: boolean
+async function main(password?: string, answer: any = {}): Promise<void> {
+	let retry: boolean, cancel: boolean
 	const {services, title, mapMethodName, maxPrototypeChainLength} = config
-	const serviceKeys = Object.keys(services)
-		.filter(key => getAllPropertyNames(services[key], maxPrototypeChainLength)
-			.find(prop => exposable(services[key], prop))
-		)
 
-	do {
+  do {
 		cancel = retry = false
 
-		const ans = await prompts([{
-			type: password || !env('CHALLENGE') ? null : 'password',
-			name: 'secret',
-			message: 'Password',
-			validate: val => (password = unlock(val) && val) && true,
-			onState: ({aborted}) => { cancel = aborted }
-		}, {
-			type: answer.service ? null : 'select',
-			name: 'service',
-			message: title,
-			choices: serviceKeys
-				.map(key => {
-					const service = services[key]
-					let title = callturn(service.title)
-					return {
-						title: service.color ? col(String(title), service.color) : title,
-						description: callturn(service.description),
-						value: key
-					}
-				})
-				.concat({title: col('✖', 'white'), description: 'Quit', value: 'quit'}),
-			format: v => v === 'quit' ? (cancel = true) && v : v,
-			onState: ({aborted}) => { retry = !aborted; cancel = aborted }
-		}, {
-			type: () => cancel || answer.action ? null : 'select',
-			name: 'action',
-			message: 'Method',
-			onState: ({aborted}) => cancel = aborted,
-			choices: ((prev: string) => {
-					return (getAllPropertyNames(services[prev], maxPrototypeChainLength)
-							.filter(prop => exposable(services[prev], prop))
-							.map((key:string) => {
-								const service = services[prev], target = (service as any)[key]
-								let title = callturn(target.title) || mapMethodName(key, service)
-								title = service.color ? col(title, service.color) : title
-								return {
-									value: key,
-									title,
-									description: callturn(target.description)
-								}
-							})
-							.concat({
-								value: 'back',
-								title: col('◄', 'white'),
-								description: 'Back'
-							})
-					)
-				}
-			) as any
-		}])
+    answer = {...answer, ...await prompts([
+        // Password
+        {
+          type: password || !env('CHALLENGE') ? null : 'password',
+          name: 'secret',
+          message: 'Password',
+          validate: val => (password = unlock(val) && val) && true,
+          onState: ({aborted}) => { cancel = aborted }
+        },
+        // Service
+        {
+          type: answer.service ? null : 'select',
+          name: 'service',
+          message: title,
+          choices:
+            Object.keys(services)
+              .filter(key =>
+                getAllPropertyNames(services[key], maxPrototypeChainLength)
+                  .find(prop => exposable(services[key], prop))
+              )
+              .map(key => {
+                const service = services[key]
+                let title = callturn(service.title)
+                return {
+                  title: service.color ? col(String(title), service.color) : title,
+                  description: callturn(service.description),
+                  value: key
+                }
+              })
+              .concat({title: col('✖', 'white'), description: 'Quit', value: 'quit'}),
+          format: v => v === 'quit' ? (cancel = true) && v : v,
+          onState: ({aborted}) => { retry = !aborted; cancel = aborted }
+        },
+        // Method
+        {
+          type: () => cancel || answer.action ? null : 'select',
+          name: 'action',
+          message: 'Method',
+          onState: ({aborted}) => cancel = aborted,
+          choices: ((prev: string) => {
+            prev = prev || answer.service
+            return getAllPropertyNames(services[prev], maxPrototypeChainLength)
+              .filter(prop => exposable(services[prev], prop))
+              .map((key:string) => {
+                const service = services[prev], target = (service as any)[key]
+                let title = callturn(target.title) || mapMethodName(key, service)
+                title = service.color ? col(title, service.color) : title
+                return {
+                  value: key,
+                  title,
+                  description: callturn(target.description)
+                }
+              })
+              .concat({
+                value: 'back',
+                title: col('◄', 'white'),
+                description: 'Back'
+              })
+          }) as any
+        }
+    ])}
 
-		answer = Object.assign(answer, ans)
-		if(cancel) retry = false
+    if(cancel) retry = false
 	} while(retry)
 
 	if(cancel){
@@ -117,26 +123,70 @@ async function main(password?: string): Promise<void> {
 		return await quit()
 	}
 
-	if(answer.action !== 'back'){
-		await execute('user', services[answer.service], (<any>services[answer.service])[answer.action], answer.action)
+  let service = services[answer.service] as any
+
+  // force recursive sub classes into this project, sorry for the mess.
+  while(isClass(service[answer.action])) {
+    service = service[answer.action]
+    answer = {...answer, ...await prompts({
+      type: () => 'select',
+      name: 'action',
+      message: 'Method',
+      // onState: ({aborted}) => cancel = aborted,
+      choices: (() => {
+        return Object.getOwnPropertyNames(service)
+          .filter(prop => exposable(service as any, prop))
+          .map((key:string) => {
+            const target = (service as any)[key]
+            let title = callturn(target.title) || mapMethodName(key, service)
+            title = service.color ? col(title, service.color) : title
+            return {
+              value: key,
+              title,
+              description: callturn(target.description)
+            }
+          })
+          .concat({
+            value: 'back',
+            title: col('◄', 'white'),
+            description: 'Back'
+          })
+      }) as any
+    })}
+  }
+
+  if(answer.action === 'back'){
+    return await main(password)
 	}
 
-	return await main(password)
+  await execute('user', service, service[answer.action], answer.action)
+
+	return await main(password, {service: answer.service})
 }
 
-export async function execute(origin: 'user' | 'job', service: typeof promptApp.Service, method: any, name?: string){
+/**
+ * Execute
+ */
+export async function execute(
+  origin: 'user' | 'job',
+  service: promptApp.Service,
+  method: any,
+  name?: string
+){
+  // let method = service[action] as any
+  method = typeof method === 'function' ? method : method.$ || method.method
+
   const box = console.box().line(
 		'['+(origin === 'user' ? col('User', 'yellow') : col(capitalize(origin), 'magenta')) +']'+
 		' ' + col(service.title || service.name, service.color || 'white') +
 		': ' + config.mapMethodName(name || method.name, service), 'pre:'
 	)
-	try {
+
+  try {
 		const spinner = ora({text:'Executing...', spinner:'dots'})
 
 		if(origin === 'user')
 			spinner.start()
-
-		method = typeof method === 'function' ? method : method.$ || method.method
 
 		const date = dateDetails()
     // const res = await method(arg({
