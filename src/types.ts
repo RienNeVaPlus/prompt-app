@@ -23,6 +23,8 @@ namespace promptApp {
 		envPrefix: string
 		envCredentialsPostfix: string
 		maxPrototypeChainLength: number
+    onQuitBefore: (cronjobs: any) => Promise<boolean | void>
+    onQuitAfter: () => Promise<void>
 	}
 
 	export abstract class Service {
@@ -65,6 +67,7 @@ namespace promptApp {
 		interval: number
 		title: string // name to display on logs and tools
 		executing: boolean // weather the job is running
+    executedAt: Date
 		active: boolean
 		disabled: boolean
 	}

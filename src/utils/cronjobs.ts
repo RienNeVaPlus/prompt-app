@@ -7,23 +7,27 @@ class Cronjobs {
 	list: promptApp.Cronjob[] = []
 
 	interval = setInterval(async () => {
-		for(const job of this.ready){
+    for(const job of this.ready){
+      if(this.interval._destroyed) continue
 			job.executing = true
-			await execute('job', job.service, job.$, job.title)
-			job.executing = false
+      job.executedAt = new Date
+      await execute('job', job.service, job.$, job.title)
+      job.executing = false
 		}
-	}, 1000)
+  }, 1000) as any
 
 	add(service: typeof promptApp.Service): promptApp.Cronjob[] {
-		const jobs: promptApp.Job[] = (service.jobs||[]).map(j => Array.isArray(j) ? {
+		const jobs = (service.jobs||[]).map(j => (Array.isArray(j) ? {
 				$: j[0],
 				interval: j[1],
 				executable: typeof j[2] === 'function' ? j[2] : undefined,
 				description: typeof j.slice(-1)[0] === 'string' ? String(j.slice(-1)[0]) : ''
-			} : j
+			} : j) as promptApp.Job
 		)
 
-		this.list = [...this.list, ...jobs.map((j: any) => ({
+		this.list = [
+      ...this.list,
+      ...jobs.map((j: any) => ({
 				id: service.id + '.' + (j.$.name||uuid()),
 				title: config.mapMethodName(j.$.name || uuid(), service),
 				interval: 1,
@@ -76,12 +80,25 @@ class Cronjobs {
 	}
 
 	async terminate(): Promise<void> {
-		clearInterval(this.interval)
+    const { interval } = this
+    if(!interval._destroyed) clearInterval(interval)
+    const now = new Date().getTime()
+    const { col } = console
 
-		const executing = this.executing
+    const executing = this.executing
 		if(executing.length){
-			console.debug(`Waiting for ${executing.length} job${executing.length === 1 ? '' : 's'} to complete`)
-			await sleep(5)
+      const box = console.box(`Waiting for ${col(executing.length + ' job' + (executing.length!==1?'s':''), 'underline')} to finish.`)
+      executing.map(job => box.line(
+        box.pad(' ', 60,
+          col(job.service.name, 'yellow')+'.'+col(job.id.split('.', 2)[1], 'magenta')
+        ),
+        box.col('running: ', 'red'),
+
+        box.pad('·' , 21, col(Math.ceil((now - job.executedAt.getTime()) / 1000)+' seconds', 'white'),true),
+
+      ))
+      box.out()
+			await sleep(4)
 			await this.terminate()
 			return
 		}

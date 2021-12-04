@@ -32,6 +32,8 @@ export const config: promptApp.Config = {
   disableActiveJobs: false,
   env: {...process.env},
   writeLogs: false,
+  onQuitBefore: async (_cronjobs) => true,
+  onQuitAfter: async () => {},
   services: {}
 };
 
@@ -222,8 +224,10 @@ export async function execute(
 }
 
 async function quit(): Promise<void> {
+  if(await config.onQuitBefore(cronjobs) === false) return
 	await cronjobs.terminate()
 	console.info('Bye')
+  await config.onQuitAfter()
 }
 
 export async function app(configuration: promptApp.Configuration): Promise<void> {
