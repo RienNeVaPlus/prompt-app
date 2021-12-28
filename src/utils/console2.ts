@@ -24,7 +24,7 @@ function extendBox(box: any){
 }
 
 export let logLevel: LogLevel = LogLevel.Debug
-const console: any = console2({disableWelcome:true, override:true}) // isWorker
+export const console: any = console2({disableWelcome:true, override:false}) // isWorker
 
 // set log level
 console.logLevel = (set?: keyof typeof LogLevel) => {
@@ -34,7 +34,7 @@ console.logLevel = (set?: keyof typeof LogLevel) => {
 
 const {stdout} = (process as any)
 
-stdout._orig_write = process.stdout.write
+stdout._orig_write = stdout.write
 stdout.write = (data: any) => {
   const n = new Date
   if(config.writeLogs){
@@ -43,7 +43,7 @@ stdout.write = (data: any) => {
       console.strip(data.toString())
     )
   }
-  stdout._orig_write(data)
+  return stdout._orig_write(data)
 }
 
 // implement logLevel
@@ -52,5 +52,3 @@ console.warn = (sup => (...args: any[]) => logLevel > 1 && sup.bind(console)(...
 console.info = (sup => (...args: any[]) => logLevel > 2 && sup.bind(console)(...args) || console)(console.info)
 console.debug = (sup => (...args: any[]) => logLevel > 3 && sup.bind(console)(...args) || console)(console.log)
 console.box = (sup => (...args: any[]) => extendBox(sup.bind(console)(...args)))(console.box)
-
-export {console}

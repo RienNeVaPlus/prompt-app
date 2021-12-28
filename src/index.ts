@@ -12,12 +12,13 @@ import {
   envKey,
   generateChallenge,
   getAllPropertyNames,
-  isCapitalized, isClass,
+  isCapitalized,
+  isClass,
   unlock
 } from './utils'
 import * as defaultServices from './services'
 
-const {col} = console;
+const {col} = console
 
 export const config: promptApp.Config = {
   title: 'Menu',
@@ -32,7 +33,7 @@ export const config: promptApp.Config = {
   disableActiveJobs: false,
   env: {...process.env},
   writeLogs: false,
-  onQuitBefore: async (_cronjobs) => true,
+  onQuitBefore: async (_cronjobs: any[]) => true,
   onQuitAfter: async () => {},
   services: {}
 };
@@ -40,7 +41,7 @@ export const config: promptApp.Config = {
 export const Utilities = defaultServices.Utilities;
 
 export {
-	encrypt, decrypt
+	encrypt, decrypt, console as console2
 }
 
 const methodTypes = ['object', 'function']
