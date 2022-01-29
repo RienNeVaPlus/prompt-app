@@ -3,7 +3,7 @@ import ora from 'ora'
 import {
   callturn,
   capitalize,
-  console,
+  console2,
   cronjobs,
   dateDetails,
   decrypt,
@@ -18,7 +18,7 @@ import {
 } from './utils'
 import * as defaultServices from './services'
 
-const {col} = console
+const {col} = console2
 
 export const config: promptApp.Config = {
   title: 'Menu',
@@ -41,7 +41,7 @@ export const config: promptApp.Config = {
 export const Utilities = defaultServices.Utilities;
 
 export {
-	encrypt, decrypt, console as console2
+	encrypt, decrypt, console2
 }
 
 const methodTypes = ['object', 'function']
@@ -179,18 +179,17 @@ export async function execute(
   // let method = service[action] as any
   method = typeof method === 'function' ? method : method.$ || method.method
 
-  const box = console.box().line(
+  const box = console2.box().line(
 		'['+(origin === 'user' ? col('User', 'yellow') : col(capitalize(origin), 'magenta')) +']'+
 		' ' + col(service.title || service.name, service.color || 'white') +
 		': ' + config.mapMethodName(name || method.name, service), 'pre:'
 	)
 
+  const spinner = ora({text:'Executing...', spinner:'dots'})
+  if(origin === 'user')
+    spinner.start()
+
   try {
-		const spinner = ora({text:'Executing...', spinner:'dots'})
-
-		if(origin === 'user')
-			spinner.start()
-
 		const date = dateDetails()
     // const res = await method(arg({
     //   box,
@@ -210,7 +209,7 @@ export async function execute(
 			spinner,
 			origin
 		})
-		const runtime = new Date().getTime() - date.date.getTime()
+    const runtime = new Date().getTime() - date.date.getTime()
 		spinner.stop()
 
 		if(res === null) return
@@ -221,13 +220,16 @@ export async function execute(
 		//console.opt.console.log(await box.build());
 		box.out()
 	}
-	catch(e){ box.error(e.stack).out() }
+	catch(e){
+    spinner.stop()
+    box.error(e.stack).out()
+  }
 }
 
 async function quit(): Promise<void> {
   if(await config.onQuitBefore(cronjobs) === false) return
 	await cronjobs.terminate()
-	console.info('Bye')
+	console2.info('Bye')
   await config.onQuitAfter()
 }
 
@@ -274,7 +276,7 @@ export async function app(configuration: promptApp.Configuration): Promise<void>
 
 	// auto unlock using key
 	if(challenge && password && !unlock(password)) {
-		console.error('Invalid password in env.'+envKey('password'))
+		console2.error('Invalid password in env.'+envKey('password'))
 		password = ''
 	}
 

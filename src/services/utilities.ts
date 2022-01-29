@@ -1,13 +1,13 @@
-import {console, copy, cronjobs, decrypt, encrypt, env, generateChallenge} from '../utils'
+import {console2, copy, cronjobs, decrypt, encrypt, env, generateChallenge} from '../utils'
 
-const {col} = console
+const {col} = console2
 
 function logLevelColor(lvl: number){
 	switch(lvl){
-		case 1: return console.col('Error', 'red')
-		case 2: return console.col('Warn', 'yellow')
-		case 3: return console.col('Info', 'green')
-		case 4: return console.col('Debug', 'cyan')
+		case 1: return console2.col('Error', 'red')
+		case 2: return console2.col('Warn', 'yellow')
+		case 3: return console2.col('Info', 'green')
+		case 4: return console2.col('Debug', 'cyan')
 	}
 }
 
@@ -31,8 +31,8 @@ export class Utilities {
 						value: j.id,
 						selected: j.active === true,
 						disable: j.disabled,
-						title: console.pad(' ', 14, j.service.title+' ')
-							+ console.pad(' ', 30, j.title)
+						title: console2.pad(' ', 14, j.service.title+' ')
+							+ console2.pad(' ', 30, j.title)
 							+ (j.description || '')
 					})
 				),
@@ -45,13 +45,13 @@ export class Utilities {
 	}
 
 	static LogLevel = {
-		description: () => 'is "'+logLevelColor(console.logLevel()).toLowerCase()+'"',
+		description: () => 'is "'+logLevelColor(console2.logLevel()).toLowerCase()+'"',
 		$: async ({prompts}: promptApp.ActionArg) => {
 			const {newLevel} = (await prompts([{
 				type: 'select',
 				name: 'newLevel',
 				message: `Set LogLevel`,
-				initial: console.logLevel()-1,
+				initial: console2.logLevel()-1,
 				choices: [
 					{title: logLevelColor(1), value: 'Error'},
 					{title: logLevelColor(2), value: 'Warn'},
@@ -59,7 +59,7 @@ export class Utilities {
 					{title: logLevelColor(4), value: 'Debug'},
 				]
 			}]))
-			if(newLevel) console.logLevel(newLevel)
+			if(newLevel) console2.logLevel(newLevel)
 			return null
 		}
 	}

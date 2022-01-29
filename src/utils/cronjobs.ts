@@ -1,7 +1,7 @@
-import {console, findDuplicates, sleep, uuid} from '.'
+import {console2, findDuplicates, sleep, uuid} from '.'
 import {config, execute} from '../index'
 
-const {col} = console
+const {col} = console2
 
 class Cronjobs {
 	list: promptApp.Cronjob[] = []
@@ -39,7 +39,7 @@ class Cronjobs {
 		)]
 
 		const duplicates = findDuplicates(this.list.map(e => e.id))
-		duplicates.forEach(d => console.log(col('Warning: Duplicate job ID "'+d+'"', 'red')))
+		duplicates.forEach(d => console2.log(col('Warning: Duplicate job ID "'+d+'"', 'red')))
 
 		return this.list
 	}
@@ -83,11 +83,11 @@ class Cronjobs {
     const { interval } = this
     if(!interval._destroyed) clearInterval(interval)
     const now = new Date().getTime()
-    const { col } = console
+    const { col } = console2
 
     const executing = this.executing
 		if(executing.length){
-      const box = console.box(`Waiting for ${col(executing.length + ' job' + (executing.length!==1?'s':''), 'underline')} to finish.`)
+      const box = console2.box(`Waiting for ${col(executing.length + ' job' + (executing.length!==1?'s':''), 'underline')} to finish.`)
       executing.map(job => box.line(
         box.pad(' ', 60,
           col(job.service.name, 'yellow')+'.'+col(job.id.split('.', 2)[1], 'magenta')
@@ -106,7 +106,7 @@ class Cronjobs {
 		const active = this.active
 		if(!active.length) return
 
-		console.warn(`Terminated ${active.length} job/s`)
+		console2.warn(`Terminated ${active.length} job/s`)
 	}
 }
 
