@@ -50,7 +50,7 @@ stdout.write = (data: any) => {
 c.error = (f => (...args: any[]) => logLevel && f.bind(c)(...args))(c.error)
 c.warn = (f => (...args: any[]) => logLevel > 1 && f.bind(c)(...args))(c.warn)
 c.info = (f => (...args: any[]) => logLevel > 2 && f.bind(c)(...args))(c.info)
-c.debug = (f => (...args: any[]) => logLevel > 3 && f.bind(c)(...args))(c.log)
+c.debug = (f => (...args: any[]) => logLevel > 3 && f.bind(c)(...args))(c.line)
 
 // @ts-ignore
 c.box = (f => (...args: any[]) => extendBox(f.bind(c)(...args)))(c.box)
