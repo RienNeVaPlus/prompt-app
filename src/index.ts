@@ -30,6 +30,7 @@ export const config: promptApp.Config = {
   envPrefix: 'APP_',
   envCredentialsPostfix: '_CREDENTIALS',
   maxPrototypeChainLength: 2,
+  randomizeJobInterval: 0,
   disableActiveJobs: false,
   env: {...process.env},
   writeLogs: false,

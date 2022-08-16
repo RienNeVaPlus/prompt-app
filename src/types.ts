@@ -22,6 +22,7 @@ namespace promptApp {
 		env: any
 		envPrefix: string
 		envCredentialsPostfix: string
+    randomizeJobInterval: number
 		maxPrototypeChainLength: number
     onQuitBefore: (cronjobs: any) => Promise<boolean | void>
     onQuitAfter: () => Promise<void>

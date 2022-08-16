@@ -30,9 +30,9 @@ class Cronjobs {
       ...jobs.map((j: any) => ({
 				id: service.id + '.' + (j.$.name||uuid()),
 				title: config.mapMethodName(j.$.name || uuid(), service),
-				interval: 1,
 				disabled: false,
 				...j,
+        interval: j.interval ? (j.interval + (j.interval * config.randomizeJobInterval)) : 1,
 				active: config.disableActiveJobs ? false : !j.disabled,
 				service,
 			})
