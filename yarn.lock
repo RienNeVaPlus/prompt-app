@@ -140,10 +140,10 @@ color-name@~1.1.4:
   resolved "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
-console2@^2.3.15:
-  version "2.3.15"
-  resolved "https://registry.yarnpkg.com/console2/-/console2-2.3.15.tgz#211c0c6ae3ab0f7bde2f6cf674084c26b0b6f648"
-  integrity sha512-/Qf3FNXhe7kyd3tFf/A04Yf080Tj9Bh2B7M35jTEeMwPl2CwNT3FhTY3sku3ssrtGCvtJcAYTc2KWhu3H7ViCw==
+console2@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/console2/-/console2-3.0.1.tgz#996fb235bd8b01ca989c3c5fb79e175937dd0d04"
+  integrity sha512-lMmfckqSGrYfxfMH9DOBKChw9iFiSdFaVo3TuUT9N21iP8w+F6LPrlAeEJJ+aYEE/beTySawT6rP2rzfgOrNJg==
   dependencies:
     async "^1.4.2"
     chalk "^1.1.1"
