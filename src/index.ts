@@ -26,6 +26,7 @@ export const config: promptApp.Config = {
   mapMethodName: name => name.replace(/^\$/,'').split(/(?=[A-Z])/)
     .map(s => capitalize(s))
     .join(' '),
+  interactive: true,
   useDefaultServices: true,
   envPrefix: 'APP_',
   envCredentialsPostfix: '_CREDENTIALS',
@@ -52,7 +53,12 @@ const exposable = (service: typeof promptApp.Service, prop: string) => {
 
 async function main(password?: string, answer: any = {}): Promise<void> {
 	let retry: boolean, cancel: boolean
-	const {services, title, mapMethodName, maxPrototypeChainLength} = config
+	const {services, title, interactive, mapMethodName, maxPrototypeChainLength} = config
+
+  if(!interactive){
+    console2.log(new Date().toISOString(), 'Ready. Interactive mode is disabled.')
+    return
+  }
 
   do {
 		cancel = retry = false

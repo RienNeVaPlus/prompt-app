@@ -15,6 +15,7 @@ namespace promptApp {
 
 	export interface Config extends Configuration {
 		title: string
+    interactive: boolean,
 		exposeMethod: (name: string, service: any) => boolean
 		mapMethodName: (name: string, service: any) => string
 		useDefaultServices: boolean
@@ -40,6 +41,8 @@ namespace promptApp {
 		static color?: 'cyan' | 'green' | 'yellow' | 'red' | 'magenta' | 'blue' | 'white' | 'grey'
 			| 'black' | 'rainbow' | 'zebra' | 'code' | string
 		static jobs?: Job[]
+
+    static onCredentials?: (credentials: string) => any
 	}
 
 	export type JobMethod = (action: ActionArg<'job'>) => any
